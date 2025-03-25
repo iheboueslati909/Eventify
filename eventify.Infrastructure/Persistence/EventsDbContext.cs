@@ -1,11 +1,27 @@
 ﻿using eventify.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.Extensions.Configuration;
+using static MassTransit.MessageHeaders;
 namespace eventify.Infrastructure;
 
 public class EventsDbContext : DbContext
 {
     public EventsDbContext(DbContextOptions<EventsDbContext> options) : base(options) { }
+    public EventsDbContext() { }
+
+    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //{
+    //    if (!optionsBuilder.IsConfigured)
+    //    {
+    //        var config = new ConfigurationBuilder()
+    //            .SetBasePath(Directory.GetCurrentDirectory())
+    //            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    //            .Build();
+
+    //        var connectionString = config.GetConnectionString("DefaultConnection");
+    //        optionsBuilder.UseSqlServer(connectionString);
+    //    }
+    //}
 
     public DbSet<Event> Events { get; set; }
     public DbSet<Member> Members { get; set; }
@@ -18,6 +34,29 @@ public class EventsDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Member ↔ Event (Many-to-Many)
+        modelBuilder.Entity<MemberEvent>()
+            .HasKey(me => new { me.MemberId, me.EventId }); // Composite primary key
+
+        modelBuilder.Entity<MemberEvent>()
+            .HasOne(me => me.Member)
+            .WithMany(m => m.MemberEvents)
+            .HasForeignKey(me => me.MemberId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MemberEvent>()
+            .HasOne(me => me.Event)
+            .WithMany(e => e.MemberEvents)
+            .HasForeignKey(me => me.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MemberEvent>()
+            .HasIndex(me => me.MemberId); // Speeds up "get saved events for a member"
+
+        modelBuilder.Entity<MemberEvent>()
+            .HasIndex(me => me.EventId); // Speeds up "get members for an event"
+
 
         // Event → Club (Many-to-One)
         modelBuilder.Entity<Event>()
@@ -40,19 +79,14 @@ public class EventsDbContext : DbContext
             .HasForeignKey(b => b.EventId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Event → RecordedPerformance (One-to-Many)
-        modelBuilder.Entity<Event>()
-            .HasMany(e => e.RecordedPerformances)
-            .WithOne(r => r.Event)
-            .HasForeignKey(r => r.EventId)
-            .OnDelete(DeleteBehavior.Cascade);
+        // ❌ Removed Event → RecordedPerformance
 
         // TimeTableSlot → RecordedPerformance (One-to-One)
         modelBuilder.Entity<TimeTableSlot>()
             .HasOne(t => t.RecordedPerformance)
             .WithOne(r => r.TimeTableSlot)
             .HasForeignKey<RecordedPerformance>(r => r.TimeTableSlotId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade); // ✅ No cycle issue
 
         // BookingInvitation → Member (Many-to-One)
         modelBuilder.Entity<BookingInvitation>()
@@ -68,6 +102,9 @@ public class EventsDbContext : DbContext
             .HasForeignKey(n => n.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<NewsFeedItem>()
+            .HasIndex(p => p.MemberId); // Faster queries for user posts
+
         // Store Enums as Strings (Optional)
         modelBuilder.Entity<BookingInvitation>()
             .Property(b => b.Status)
@@ -81,6 +118,7 @@ public class EventsDbContext : DbContext
             .Property(e => e.Type)
             .HasConversion<string>();
 
+        // Configure Value Objects as Owned Types
         modelBuilder.Entity<Member>()
             .OwnsOne(m => m.Email, e =>
             {

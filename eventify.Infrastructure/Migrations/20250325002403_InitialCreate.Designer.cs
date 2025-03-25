@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using eventify.Infrastructure;
 
@@ -11,9 +12,11 @@ using eventify.Infrastructure;
 namespace eventify.Infrastructure.Migrations
 {
     [DbContext(typeof(EventsDbContext))]
-    partial class EventsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250325002403_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,6 +94,9 @@ namespace eventify.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("MemberId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -98,6 +104,8 @@ namespace eventify.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClubId");
+
+                    b.HasIndex("MemberId");
 
                     b.ToTable("Events");
                 });
@@ -125,29 +133,6 @@ namespace eventify.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Members");
-                });
-
-            modelBuilder.Entity("eventify.Domain.Entities.MemberEvent", b =>
-                {
-                    b.Property<int>("MemberId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Attended")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("SavedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("MemberId", "EventId");
-
-                    b.HasIndex("EventId");
-
-                    b.HasIndex("MemberId");
-
-                    b.ToTable("MemberEvent");
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.NewsFeedItem", b =>
@@ -269,6 +254,10 @@ namespace eventify.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("eventify.Domain.Entities.Member", null)
+                        .WithMany("SavedEvents")
+                        .HasForeignKey("MemberId");
+
                     b.OwnsOne("eventify.Domain.ValueObjects.DateRange", "DateRange", b1 =>
                         {
                             b1.Property<int>("EventId")
@@ -338,25 +327,6 @@ namespace eventify.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("eventify.Domain.Entities.MemberEvent", b =>
-                {
-                    b.HasOne("eventify.Domain.Entities.Event", "Event")
-                        .WithMany("MemberEvents")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("eventify.Domain.Entities.Member", "Member")
-                        .WithMany("MemberEvents")
-                        .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-
-                    b.Navigation("Member");
-                });
-
             modelBuilder.Entity("eventify.Domain.Entities.NewsFeedItem", b =>
                 {
                     b.HasOne("eventify.Domain.Entities.Member", "Member")
@@ -399,8 +369,6 @@ namespace eventify.Infrastructure.Migrations
                 {
                     b.Navigation("BookingInvitations");
 
-                    b.Navigation("MemberEvents");
-
                     b.Navigation("TimeTableSlots");
                 });
 
@@ -408,7 +376,7 @@ namespace eventify.Infrastructure.Migrations
                 {
                     b.Navigation("BookingInvitations");
 
-                    b.Navigation("MemberEvents");
+                    b.Navigation("SavedEvents");
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.TimeTableSlot", b =>

@@ -11,8 +11,7 @@ public class Member
     public Email Email { get; private set; }
     public string PasswordHash { get; private set; }
     public List<BookingInvitation> BookingInvitations { get; private set; } = new();
-    public List<Event> SavedEvents { get; private set; } = new();
-
+    public List<MemberEvent> MemberEvents { get; private set; } = new();
     private Member() { }
 
     public Member(string firstName, string lastName, Email email, string passwordHash)

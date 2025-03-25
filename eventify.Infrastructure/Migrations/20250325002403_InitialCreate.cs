@@ -161,12 +161,6 @@ namespace eventify.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_RecordedPerformances", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_RecordedPerformances_Events_EventId",
-                        column: x => x.EventId,
-                        principalTable: "Events",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_RecordedPerformances_TimeTableSlots_TimeTableSlotId",
                         column: x => x.TimeTableSlotId,
                         principalTable: "TimeTableSlots",
@@ -198,11 +192,6 @@ namespace eventify.Infrastructure.Migrations
                 name: "IX_NewsFeedItems_MemberId",
                 table: "NewsFeedItems",
                 column: "MemberId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RecordedPerformances_EventId",
-                table: "RecordedPerformances",
-                column: "EventId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RecordedPerformances_TimeTableSlotId",

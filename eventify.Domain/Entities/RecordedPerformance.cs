@@ -7,7 +7,6 @@ public class RecordedPerformance
 {
     public int Id { get; private set; }
     public int EventId { get; private set; }
-    public Event Event { get; private set; }
 
     // New: One-to-One Relationship with TimeTableSlot
     public int TimeTableSlotId { get; private set; }

@@ -17,9 +17,10 @@ public class Event
     // New: One-to-Many Relationship with TimeTableSlot
     public List<TimeTableSlot> TimeTableSlots { get; private set; } = new();
 
+    public List<MemberEvent> MemberEvents { get; private set; } = new();
+
     // Existing Relationships
     public List<BookingInvitation> BookingInvitations { get; private set; } = new();
-    public List<RecordedPerformance> RecordedPerformances { get; private set; } = new();
     public EventType Type { get; private set; }
 
     private Event() { } // Required for EF Core
