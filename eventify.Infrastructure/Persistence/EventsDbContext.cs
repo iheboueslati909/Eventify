@@ -9,20 +9,6 @@ public class EventsDbContext : DbContext
     public EventsDbContext(DbContextOptions<EventsDbContext> options) : base(options) { }
     public EventsDbContext() { }
 
-    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //{
-    //    if (!optionsBuilder.IsConfigured)
-    //    {
-    //        var config = new ConfigurationBuilder()
-    //            .SetBasePath(Directory.GetCurrentDirectory())
-    //            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    //            .Build();
-
-    //        var connectionString = config.GetConnectionString("DefaultConnection");
-    //        optionsBuilder.UseSqlServer(connectionString);
-    //    }
-    //}
-
     public DbSet<Event> Events { get; set; }
     public DbSet<Member> Members { get; set; }
     public DbSet<Club> Clubs { get; set; }
