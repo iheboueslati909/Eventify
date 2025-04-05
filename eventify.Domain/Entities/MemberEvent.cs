@@ -1,27 +1,40 @@
-﻿using System;
-
-namespace eventify.Domain.Entities;
+﻿namespace eventify.Domain.Entities;
 
 public class MemberEvent
 {
-    public int MemberId { get; private set; }
-    public Member Member { get; private set; }
-
-    public int EventId { get; private set; }
-    public Event Event { get; private set; }
-
-    public bool Attended { get; private set; }  // Track attendance
-    public DateTime SavedAt { get; private set; } // Track when event was saved
+    public bool IsInterested { get; private set; } // Tracks interest
+    public bool IsCheckedIn { get; private set; } // Tracks check-in status
+    public DateTime? PaymentDate { get; private set; } // Tracks payment date
+    public DateTime CreatedAt { get; private set; } // Tracks when the relationship was created
 
     private MemberEvent() { } // Required for EF Core
 
-    public MemberEvent(int memberId, int eventId)
+    public MemberEvent()
     {
-        MemberId = memberId;
-        EventId = eventId;
-        SavedAt = DateTime.UtcNow;
-        Attended = false;
+        IsInterested = true;
+        IsCheckedIn = false;
+        PaymentDate = null;
+        CreatedAt = DateTime.UtcNow;
     }
 
-    public void MarkAsAttended() => Attended = true;
+    public void MarkAsCheckedIn()
+    {
+        if (IsCheckedIn)
+            throw new InvalidOperationException("Member is already checked in.");
+
+        IsCheckedIn = true;
+    }
+
+    public void RecordPayment(DateTime paymentDate)
+    {
+        if (PaymentDate != null)
+            throw new InvalidOperationException("Payment is already recorded.");
+
+        PaymentDate = paymentDate;
+    }
+
+    public void RemoveInterest()
+    {
+        IsInterested = false;
+    }
 }

@@ -1,28 +1,25 @@
 ﻿using EventsManagement.Domain.ValueObjects;
-using System.Collections.Generic;
-
 namespace eventify.Domain.Entities;
 
 public class Member
 {
-    public int Id { get; private set; }
-    public string FirstName { get; private set; }
-    public string LastName { get; private set; }
+    public Guid Id { get; private set; }
+    public Name FirstName { get; private set; }
+    public Name LastName { get; private set; }
     public Email Email { get; private set; }
-    public string PasswordHash { get; private set; }
-    public List<BookingInvitation> BookingInvitations { get; private set; } = new();
-    public List<MemberEvent> MemberEvents { get; private set; } = new();
+    public Password Password { get; private set; }
+
     private Member() { }
 
-    public Member(string firstName, string lastName, Email email, string passwordHash)
+    public Member(string firstName, string lastName, Email email, Password password)
     {
         if (string.IsNullOrWhiteSpace(firstName)) throw new ArgumentException("First name is required.");
         if (string.IsNullOrWhiteSpace(lastName)) throw new ArgumentException("Last name is required.");
-        if (string.IsNullOrWhiteSpace(passwordHash)) throw new ArgumentException("Password is required.");
+        if (password == null) throw new ArgumentException("Password is required.");
 
         FirstName = firstName;
         LastName = lastName;
         Email = email;
-        PasswordHash = passwordHash;
+        Password = password;
     }
 }

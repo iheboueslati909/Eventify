@@ -1,31 +1,31 @@
 ﻿using eventify.Domain.Enums;
-using System;
+using eventify.Domain.ValueObjects;
 
 namespace eventify.Domain.Entities;
 
 public class RecordedPerformance
 {
-    public int Id { get; private set; }
-    public int EventId { get; private set; }
-
-    // New: One-to-One Relationship with TimeTableSlot
-    public int TimeTableSlotId { get; private set; }
-    public TimeTableSlot TimeTableSlot { get; private set; }
-
-    public string RecordingLink { get; private set; }
-    public DateTime Timestamp { get; private set; }
+    public Guid Id { get; private set; }
+    public Url MediaUrl { get; private set; }
     public PerformanceType Type { get; private set; }
+    public DateRange Timestamp { get; private set; }
 
-    private RecordedPerformance() { } // Required for EF Core
+    private RecordedPerformance() { }
 
-    public RecordedPerformance(int eventId, int timeTableSlotId, string recordingLink)
+    public RecordedPerformance(Url mediaUrl, PerformanceType type, DateTime performanceStart, DateTime performanceEnd)
     {
-        if (string.IsNullOrWhiteSpace(recordingLink))
-            throw new ArgumentException("Recording link is required.");
+        MediaUrl = mediaUrl;
+        Type = type;
+        Timestamp = new DateRange(performanceStart, performanceEnd);
+    }
 
-        EventId = eventId;
-        TimeTableSlotId = timeTableSlotId;
-        RecordingLink = recordingLink;
-        Timestamp = DateTime.UtcNow;
+    public void UpdateMediaUrl(Url newUrl)
+    {
+        MediaUrl = newUrl;
+    }
+
+    public void UpdatePerformanceTime(DateTime newStart, DateTime newEnd)
+    {
+        Timestamp = new DateRange(newStart, newEnd);
     }
 }

@@ -1,450 +1,326 @@
 {
-    "projectOverview": {
-        "projectName": "Events Management Platform",
-        "description": "A platform for managing events, clubs, artists, and members, with future plans for DJ streaming.",
-        "techStack": [
-            ".NET 8",
-            "MS-SQL",
-            "Redis",
-            "MassTransit",
-            "Docker/Kubernetes"
-        ],
-        "deploymentTarget": "Cloud (likely Azure)"
-    },
-    "architecture": {
-        "architecturePattern": "Clean Architecture + Modular Monolith",
-        "domainDrivenDesign": "Used for structuring core business logic",
-        "cqrs": "Command Query Responsibility Segregation (separating reads and writes)",
-        "messaging": "MassTransit (to support asynchronous processes such as booking invitation notifications)",
-        "resultPattern": "Result<T> for handling success/failure outcomes",
-        "validation": "FluentValidation for input validation",
-        "solutionStructure": {
-            "projects": [
-                {
-                    "name": "EventsManagement.API",
-                    "description": "Web API: Controllers, middleware, Swagger integration."
-                },
-                {
-                    "name": "EventsManagement.Application",
-                    "description": "Business logic: Implements CQRS (commands/queries), validation, and use cases."
-                },
-                {
-                    "name": "EventsManagement.Domain",
-                    "description": "Core domain: Contains entities, aggregates, and value objects."
-                },
-                {
-                    "name": "EventsManagement.Infrastructure",
-                    "description": "Data access & external services: Handles EF Core, repositories, caching (Redis), messaging, and integrations (e.g., Google Maps API)."
-                }
-            ],
-            "database": "MS-SQL (with Entity Framework Core)",
-            "caching": "Redis",
-            "containerization": "Docker (with potential Kubernetes orchestration for scaling)"
-        }
-    },
-    "functionalRequirements": {
-        "member": [
-            {
-                "feature": "Create an event",
-                "details": [
-                    "Optionally include a clubId and artistAccountIds.",
-                    "Construct a timetable for the event and send a booking invitation to the specified ArtistAccounts."
-                ]
-            },
-            {
-                "feature": "Accept a booking invitation",
-                "details": "ArtistAccounts manage invitations directly."
-            },
-            {
-                "feature": "Browse events",
-                "details": "Have nearby events suggested based on the user's location."
-            },
-            {
-                "feature": "Login/logout",
-                "details": "Authentication for members."
-            },
-            {
-                "feature": "Create a club",
-                "details": "Verify ownership using the Google Maps API."
-            },
-            {
-                "feature": "News Feed",
-                "details": [
-                    "Personalized news feed for members.",
-                    "Includes updates about entities they follow (e.g., new events, recorded performances, artist bookings)."
-                ]
-            }
-        ],
-        "admin": [
-            {
-                "feature": "Login/logout",
-                "details": "Authentication for admins."
-            },
-            {
-                "feature": "Manage members, events, clubs",
-                "details": "CRUD operations for members, events, and clubs."
-            },
-            {
-                "feature": "View reports and statistics",
-                "details": "Access to platform analytics and reports."
-            }
-        ]
-    },
-    "entityModeling": {
-        "coreEntities": [
-            {
-                "entity": "Member",
-                "keyFields": [
-                    "id",
-                    "firstName",
-                    "lastName",
-                    "email",
-                    "password",
-                    "isVerified",
-                    "savedEvents",
-                    "subscribedConcepts",
-                    "subscribedArtists"
-                ]
-            },
-            {
-                "entity": "ArtistAccount",
-                "keyFields": [
-                    "id",
-                    "memberId",
-                    "name",
-                    "description",
-                    "genres",
-                    "soundCloudLink",
-                    "facebookLink",
-                    "email",
-                    "bookingInvitations"
-                ]
-            },
-            {
-                "entity": "Club",
-                "keyFields": [
-                    "id",
-                    "title",
-                    "mapsLink",
-                    "description",
-                    "isVerified"
-                ]
-            },
-            {
-                "entity": "Event",
-                "keyFields": [
-                    "id",
-                    "dates",
-                    "mapsLink",
-                    "title",
-                    "artistAccountIds",
-                    "artistAccountNames",
-                    "clubId",
-                    "description",
-                    "timetable"
-                ]
-            },
-            {
-                "entity": "BookingInvitation",
-                "keyFields": [
-                    "id",
-                    "eventId",
-                    "artistAccountId",
-                    "status (pending/accepted/rejected)",
-                    "timestamp"
-                ]
-            },
-            {
-                "entity": "RecordedPerformance",
-                "keyFields": [
-                    "id",
-                    "eventId",
-                    "timetableSlotId",
-                    "recordingLink",
-                    "timestamp"
-                ]
-            },
-            {
-                "entity": "NewsFeedItem",
-                "keyFields": [
-                    "id",
-                    "memberId",
-                    "type (event, performance, artist booking)",
-                    "relatedEntityId",
-                    "timestamp",
-                    "message"
-                ]
-            }
-        ]
-    },
-    "commands": [
-        {
-            "name": "CreateEventCommand",
-            "purpose": "Creates a new event.",
-            "input": [
-                "title",
-                "dates",
-                "description",
-                "clubId",
-                "artistAccountIds",
-                "timetable"
-            ],
-            "output": "Event ID"
-        },
-        {
-            "name": "UpdateEventCommand",
-            "purpose": "Updates an existing event.",
-            "input": [
-                "eventId",
-                "updatedDetails"
-            ],
-            "output": "Success/failure status"
-        },
-        {
-            "name": "DeleteEventCommand",
-            "purpose": "Deletes an event.",
-            "input": [
-                "eventId"
-            ],
-            "output": "Success/failure status"
-        },
-        {
-            "name": "AddRecordedPerformanceCommand",
-            "purpose": "Adds a recorded performance to an event's timetable slot.",
-            "input": [
-                "eventId",
-                "timetableSlotId",
-                "recordingLink"
-            ],
-            "output": "Success/failure status"
-        },
-        {
-            "name": "SendBookingInvitationCommand",
-            "purpose": "Sends a booking invitation to an artist for an event.",
-            "input": [
-                "eventId",
-                "artistAccountId"
-            ],
-            "output": "Booking invitation ID"
-        },
-        {
-            "name": "AcceptBookingInvitationCommand",
-            "purpose": "Marks a booking invitation as accepted by the artist.",
-            "input": [
-                "bookingInvitationId"
-            ],
-            "output": "Success/failure status"
-        },
-        {
-            "name": "RejectBookingInvitationCommand",
-            "purpose": "Marks a booking invitation as rejected by the artist.",
-            "input": [
-                "bookingInvitationId"
-            ],
-            "output": "Success/failure status"
-        },
-        {
-            "name": "CreateClubCommand",
-            "purpose": "Creates a new club.",
-            "input": [
-                "title",
-                "mapsLink",
-                "description"
-            ],
-            "output": "Club ID"
-        },
-        {
-            "name": "VerifyClubOwnershipCommand",
-            "purpose": "Verifies club ownership using Google Maps API.",
-            "input": [
-                "clubId",
-                "ownershipProof"
-            ],
-            "output": "Success/failure status"
-        },
-        {
-            "name": "RegisterMemberCommand",
-            "purpose": "Registers a new member.",
-            "input": [
-                "firstName",
-                "lastName",
-                "email",
-                "password"
-            ],
-            "output": "Member ID"
-        },
-        {
-            "name": "UpdateMemberProfileCommand",
-            "purpose": "Updates a member's profile information.",
-            "input": [
-                "memberId",
-                "updatedDetails"
-            ],
-            "output": "Success/failure status"
-        },
-        {
-            "name": "SubscribeToConceptCommand",
-            "purpose": "Subscribes a member to a concept (series of events).",
-            "input": [
-                "memberId",
-                "conceptId"
-            ],
-            "output": "Success/failure status"
-        },
-        {
-            "name": "SubscribeToArtistCommand",
-            "purpose": "Subscribes a member to an artist.",
-            "input": [
-                "memberId",
-                "artistAccountId"
-            ],
-            "output": "Success/failure status"
-        }
+  "projectOverview": {
+    "projectName": "Events Management Platform",
+    "description": "A platform for managing events, clubs, artists, and members, with future plans for DJ streaming.",
+    "techStack": [
+      ".NET 8",
+      "MS-SQL",
+      "Redis",
+      "MassTransit",
+      "Docker/Kubernetes"
     ],
-    "queries": [
+    "deploymentTarget": "Cloud (likely Azure)"
+  },
+  "architecture": {
+    "architecturePattern": "Clean Architecture + Modular Monolith",
+    "domainDrivenDesign": "Used for structuring core business logic",
+    "cqrs": "Command Query Responsibility Segregation (separating reads and writes)",
+    "messaging": "MassTransit (to support asynchronous processes notifications)",
+    "resultPattern": "Result<T> for handling success/failure outcomes",
+    "validation": "FluentValidation for input validation",
+    "solutionStructure": {
+      "projects": [
         {
-            "name": "GetEventByIdQuery",
-            "purpose": "Fetches details of a specific event.",
-            "input": [
-                "eventId"
-            ],
-            "output": "Event details"
+          "name": "eventify.API",
+          "description": "Web API: Controllers, middleware, Swagger integration."
         },
         {
-            "name": "GetEventsByClubQuery",
-            "purpose": "Fetches all events associated with a specific club.",
-            "input": [
-                "clubId"
-            ],
-            "output": "List of events"
+          "name": "eventify.Application",
+          "description": "Business logic: Implements CQRS (commands/queries), validation, and use cases."
         },
         {
-            "name": "GetNearbyEventsQuery",
-            "purpose": "Fetches nearby events based on the member's location.",
-            "input": [
-                "latitude",
-                "longitude"
-            ],
-            "output": "List of nearby events"
+          "name": "eventify.Domain",
+          "description": "Core domain: Contains entities, aggregates, and value objects."
         },
         {
-            "name": "GetEventsByArtistQuery",
-            "purpose": "Fetches all events where a specific artist is booked.",
-            "input": [
-                "artistAccountId"
-            ],
-            "output": "List of events"
-        },
-        {
-            "name": "GetBookingInvitationsByArtistQuery",
-            "purpose": "Fetches all booking invitations for a specific artist.",
-            "input": [
-                "artistAccountId"
-            ],
-            "output": "List of booking invitations"
-        },
-        {
-            "name": "GetBookingInvitationsByEventQuery",
-            "purpose": "Fetches all booking invitations for a specific event.",
-            "input": [
-                "eventId"
-            ],
-            "output": "List of booking invitations"
-        },
-        {
-            "name": "GetClubByIdQuery",
-            "purpose": "Fetches details of a specific club.",
-            "input": [
-                "clubId"
-            ],
-            "output": "Club details"
-        },
-        {
-            "name": "GetClubsByLocationQuery",
-            "purpose": "Fetches clubs near a specific location.",
-            "input": [
-                "latitude",
-                "longitude"
-            ],
-            "output": "List of clubs"
-        },
-        {
-            "name": "GetMemberByIdQuery",
-            "purpose": "Fetches details of a specific member.",
-            "input": [
-                "memberId"
-            ],
-            "output": "Member details"
-        },
-        {
-            "name": "GetNewsFeedQuery",
-            "purpose": "Fetches the personalized news feed for a member.",
-            "input": [
-                "memberId"
-            ],
-            "output": "List of news feed items"
-        },
-        {
-            "name": "GetSubscribedConceptsQuery",
-            "purpose": "Fetches all concepts a member is subscribed to.",
-            "input": [
-                "memberId"
-            ],
-            "output": "List of concepts"
-        },
-        {
-            "name": "GetSubscribedArtistsQuery",
-            "purpose": "Fetches all artists a member is subscribed to.",
-            "input": [
-                "memberId"
-            ],
-            "output": "List of artists"
-        },
-        {
-            "name": "GetRecordedPerformancesByEventQuery",
-            "purpose": "Fetches all recorded performances for a specific event.",
-            "input": [
-                "eventId"
-            ],
-            "output": "List of recorded performances"
-        },
-        {
-            "name": "GetRecordedPerformancesByArtistQuery",
-            "purpose": "Fetches all recorded performances by a specific artist.",
-            "input": [
-                "artistAccountId"
-            ],
-            "output": "List of recorded performances"
-        },
-        {
-            "name": "GetAllMembersQuery",
-            "purpose": "Fetches all members (for admin purposes).",
-            "input": [],
-            "output": "List of members"
-        },
-        {
-            "name": "GetAllEventsQuery",
-            "purpose": "Fetches all events (for admin purposes).",
-            "input": [],
-            "output": "List of events"
-        },
-        {
-            "name": "GetAllClubsQuery",
-            "purpose": "Fetches all clubs (for admin purposes).",
-            "input": [],
-            "output": "List of clubs"
+          "name": "eventify.Infrastructure",
+          "description": "Data access & external services: Handles EF Core, repositories, caching (Redis), messaging, and integrations (e.g., Google Maps API)."
         }
-    ],
-    "futureScalability": {
-        "currentState": "Modular Monolith",
-        "futurePlan": [
-            "Extract separate microservices for features like StreamingService or PaymentsService.",
-            "Use MassTransit for asynchronous communication between services.",
-            "Transition to a database-per-service model if scalability demands increase."
-        ]
-    },
-    "nextSteps": {
-        "aiAssistedDevelopment": [
-        ]
+      ],
+      "database": "MS-SQL (with Entity Framework Core)",
+      "caching": "Redis",
+      "containerization": "Docker (with potential Kubernetes orchestration for scaling)"
     }
+  },
+  "functionalRequirements": {
+    "member": [
+      {
+        "feature": "Create a concept",
+        "details": [
+          "A concept can have a series of events, like Tomorrow land is a festival concept that happens every year."
+        ]
+      },
+      {
+        "feature": "Create an event for a concept",
+        "details": [
+          "Optionally include a club."
+        ]
+      },
+      {
+        "feature": "Create an time table for an event",
+        "details": [
+          "a time table is constructed by 1/many time table slots ",
+          "each slot has either 1 or many artists tagged , if there is no artist profile found , the organizer must specify a title"
+        ]
+      },
+      {
+        "feature": "Browse events",
+        "details": "Have nearby events suggested based on the user's location or browse by filter."
+      },
+      {
+        "feature": "Login/logout",
+        "details": "Authentication for members."
+      },
+      {
+        "feature": "Create a club"
+      },
+      {
+        "feature": "Create Artist profile"
+      },
+      {
+        "feature": "Can follow Artist profiles, Clubs, Concepts"
+      },
+      {
+        "feature": "News Feed",
+        "details": [
+          "Personalized news feed for members.",
+          "Includes updates about entities they follow (e.g., new events, recorded performances, artist bookings)."
+        ]
+      }
+    ],
+    "admin": [
+      {
+        "feature": "Login/logout",
+        "details": "Authentication for admins."
+      },
+      {
+        "feature": "Manage members, events, clubs",
+        "details": "CRUD operations for members, events, and clubs."
+      },
+      {
+        "feature": "View reports and statistics",
+        "details": "Access to platform analytics and reports."
+      }
+    ]
+  },
+  "entityModeling": {
+    "coreEntities": [
+      {
+        "entity": "Member",
+        "keyFields": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "PasswordHash",
+          "MemberEvents", //manyToMany , navigation property
+          "ArtistProfiles" //oneToMany , navigation property
+        ]
+      },
+      {
+        "entity": "ArtistProfile",
+        "keyFields": [
+          "id",
+          "memberId",
+          "name",
+          "Bio",
+          "genres", //enums
+          "soundCloudLink", //optional
+          "facebookLink", //optional
+          "spotifyLink", //optional
+          "instagramLink", //optional
+          "youtubeLink", //optional
+          "email"
+        ]
+      },
+      {
+        "entity": "Club",
+        "keyFields": [
+          "id",
+          "title",
+          "mapsLink", //optional
+          "description",
+          "isVerified",
+          "events" //oneToMany" , navigation property
+        ]
+      },
+      {
+        "entity": "Event",
+        "keyFields": [
+          "id",
+          "title",
+          "description",
+          "date",
+          "clubId",
+          "club", //many to one , navigation property
+          "timeTableId", //optional
+          "timeTable", //optional, one to one , navigation property
+          "memberEvents", //manyToMany , navigation property ,
+          "eventType", //enum
+          "artistAccountIds",
+          "artistAccountNames",
+          "timetable"
+        ]
+      },
+      {
+        "entity": "RecordedPerformance",
+        "keyFields": [
+          "id",
+          "mediaUrl",
+          "type", //enum
+          "artistsIds",
+          "artistsNames", //one to many , navigation property , artist entity
+          "timetableSlotId", // optional
+          "timeTableSlot" // optional , one to one , nagiavtion property
+        ]
+      },
+      {
+        "entity": "TimeTable",
+        "keyFields": [
+          "id",
+          "eventId",
+          "event", //one to one , navigation property
+          "Slots" //one to many , navigation property TimeTableSlots entity
+        ]
+      },
+      {
+        "entity": "TimeTableSlot",
+        "keyFields": [
+          "id",
+          "timeTableId",
+          "startTime", //TimeSpan type
+          "endTime", //TimeSpan type
+          "artistIds",
+          "artists", //nagivation property , one to many
+          "recordedPerformance" //navigation property , one to one
+        ]
+      }
+    ]
+  },
+  "commands": {
+    "description": "These are the operations that modify data.",
+    "memberCommands": [
+      {
+        "name": "CreateMember",
+        "description": "Registers a new member."
+      },
+      {
+        "name": "UpdateMember",
+        "description": "Updates member details."
+      },
+      {
+        "name": "CreateArtistProfile",
+        "description": "Converts a member into an artist profile."
+      }
+    ],
+    "conceptCommands": [
+      {
+        "name": "CreateConcept",
+        "description": "Creates a new concept."
+      },
+      {
+        "name": "UpdateConcept",
+        "description": "Renames the concept or updates its music genres."
+      }
+    ],
+    "eventCommands": [
+      {
+        "name": "CreateEvent",
+        "description": "Creates a new event within a concept."
+      },
+      {
+        "name": "UpdateEvent",
+        "description": "Modifies event details (title, description, location, date, type, music genre)."
+      }
+    ],
+    "timeTableCommands": [
+      {
+        "name": "CreateTimeTable",
+        "description": "Creates a timetable for an event."
+      },
+      {
+        "name": "AddSlotToTimeTable",
+        "description": "Adds a slot to a timetable."
+      },
+      {
+        "name": "UpdateSlotTime",
+        "description": "Updates start and end time of a slot."
+      }
+    ],
+    "recordedPerformanceCommands": [
+      {
+        "name": "CreatePerformance",
+        "description": "Uploads a recorded performance (linked to event or artist dashboard)."
+      },
+      {
+        "name": "UpdatePerformance",
+        "description": "Updates details and attached artists of a recorded performance."
+      },
+      {
+        "name": "DeletePerformance",
+        "description": "Deletes a recorded performance."
+      }
+    ]
+  },
+  "queries": {
+    "description": "These are used for retrieving data.",
+    "memberQueries": [
+      {
+        "name": "GetMemberProfile",
+        "description": "Retrieves a member's profile and artist status."
+      },
+      {
+        "name": "GetMemberConcepts",
+        "description": "Retrieves concepts created by a member."
+      }
+    ],
+    "conceptQueries": [
+      {
+        "name": "GetConceptDetails",
+        "description": "Retrieves a concept's details, including events and music genres."
+      }
+    ],
+    "eventQueries": [
+      {
+        "name": "GetEventDetails",
+        "description": "Retrieves details of a specific event."
+      },
+      {
+        "name": "GetEventsByConcept",
+        "description": "Retrieves all events under a specific concept."
+      }
+    ],
+    "timeTableQueries": [
+      {
+        "name": "GetTimeTableByEvent",
+        "description": "Retrieves the timetable for a specific event."
+      },
+      {
+        "name": "GetTimeTableSlotDetails",
+        "description": "Retrieves details of a specific slot."
+      }
+    ],
+    "recordedPerformanceQueries": [
+      {
+        "name": "GetEventPerformances",
+        "description": "Retrieves performances uploaded for a specific event."
+      },
+      {
+        "name": "GetArtistPerformances",
+        "description": "Retrieves performances uploaded by an artist from their dashboard."
+      }
+    ]
+  },
+  "futureScalability": {
+    "currentState": "Modular Monolith",
+    "futurePlan": [
+      "Extract separate microservices for features like StreamingService or PaymentsService.",
+      "Use MassTransit for asynchronous communication between services.",
+      "Transition to a database-per-service model if scalability demands increase."
+    ]
+  },
+  "nextSteps": {
+    "aiAssistedDevelopment": [
+    ]
+  }
 }
