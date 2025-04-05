@@ -4,6 +4,8 @@ public class Description
 {
     public string Value { get; }
 
+    private Description() { } // Required for EF Core
+
     public Description(string value)
     {
         if (string.IsNullOrWhiteSpace(value))

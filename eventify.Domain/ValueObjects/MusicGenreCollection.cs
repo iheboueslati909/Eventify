@@ -8,6 +8,8 @@ public class MusicGenreCollection
 
     public IReadOnlyCollection<MusicGenre> Genres => _genres.AsReadOnly();
 
+    private MusicGenreCollection() { } // Required for EF Core
+    
     public MusicGenreCollection(IEnumerable<MusicGenre> genres)
     {
         if (genres == null || !genres.Any())

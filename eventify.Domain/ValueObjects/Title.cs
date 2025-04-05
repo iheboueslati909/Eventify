@@ -4,6 +4,8 @@ public class Title
 {
     public string Value { get; }
 
+    private Title() { } // Required for EF Core
+
     public Title(string value)
     {
         if (string.IsNullOrWhiteSpace(value))

@@ -4,6 +4,8 @@ public class Password
 {
     public string Hash { get; }
 
+    private Password() { } // Required for EF Core
+
     public Password(string hash)
     {
         if (string.IsNullOrWhiteSpace(hash))

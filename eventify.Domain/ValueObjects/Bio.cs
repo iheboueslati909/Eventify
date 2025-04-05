@@ -4,6 +4,8 @@ public class Bio
 {
     public string Value { get; }
 
+    private Bio() { } // Required for EF Core
+
     public Bio(string value)
     {
         if (string.IsNullOrWhiteSpace(value))

@@ -13,12 +13,17 @@ namespace eventify.Domain.ValueObjects
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentException("URL cannot be empty.");
 
-            if (!Regex.IsMatch(url, @"^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$"))
+            if (!Regex.IsMatch(url, @"^(https?|ftp):\/\/[\w\-]+(\.[\w\-]+)+([\w\-.,@?^=%&:/~+#]*[\w\-@?^=%&/~+#])?$"))
                 throw new ArgumentException("Invalid URL format.");
 
             Value = url;
         }
 
         public override string ToString() => Value;
+
+        public override bool Equals(object? obj) =>
+            obj is Url url && Value == url.Value;
+
+        public override int GetHashCode() => Value.GetHashCode();
     }
 }

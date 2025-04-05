@@ -1,34 +1,42 @@
 ﻿namespace eventify.Domain.Aggregates;
 using eventify.Domain.Entities;
 using eventify.Domain.ValueObjects;
+
 public class TimeTableAggregate
 {
     public Guid Id { get; private set; }
-    public Guid EventId { get; private set; }
-    private readonly List<Guid> _slotIds = new();
-    public IReadOnlyCollection<Guid> SlotIds => _slotIds.AsReadOnly();
-    
+    public Title StageName { get; private set; } // Value object for stage name
+    private readonly List<TimeTableSlot> _slots = new(); // Manage slots directly
+    public IReadOnlyCollection<TimeTableSlot> Slots => _slots.AsReadOnly();
+
     private TimeTableAggregate() { } // Required for EF Core
 
-    public TimeTableAggregate(Guid eventId)
+    public TimeTableAggregate(Title stageName)
     {
+        StageName = stageName ?? throw new ArgumentNullException(nameof(stageName));
         Id = Guid.NewGuid();
-        EventId = eventId;
     }
 
-    public void AddSlot(Guid slotId)
+    public void AddSlot(TimeSpan startTime, TimeSpan endTime, Title title)
     {
-        if (SlotIds.Contains(slotId))
-            throw new InvalidOperationException("Slot is already associated with this time table.");
+        if (startTime >= endTime)
+            throw new ArgumentException("Start time must be before end time.", nameof(startTime));
 
-        SlotIds.Add(slotId);
+        var slot = new TimeTableSlot(Id, startTime, endTime, title);
+        _slots.Add(slot);
     }
 
     public void RemoveSlot(Guid slotId)
     {
-        if (!SlotIds.Contains(slotId))
-            throw new InvalidOperationException("Slot is not associated with this time table.");
+        var slot = _slots.FirstOrDefault(s => s.Id == slotId);
+        if (slot == null)
+            throw new InvalidOperationException("Slot not found.");
 
-        SlotIds.Remove(slotId);
+        _slots.Remove(slot);
+    }
+
+    public void UpdateStageName(Title newStageName)
+    {
+        StageName = newStageName ?? throw new ArgumentNullException(nameof(newStageName));
     }
 }

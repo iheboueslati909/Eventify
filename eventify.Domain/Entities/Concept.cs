@@ -1,5 +1,7 @@
 ﻿using eventify.Domain.Enums;
 using eventify.Domain.ValueObjects;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace eventify.Domain.Entities;
 
@@ -13,27 +15,63 @@ public class Concept
 
     private Concept() { } // Required for EF Core
 
-    public Concept(string name, string description, List<MusicGenre> genres)
+    public Concept(Title name, Description description, IEnumerable<MusicGenre> genres)
     {
-        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Concept name is required.");
-        if (genres == null || genres.Count == 0) throw new ArgumentException("At least one genre must be selected.");
+        UpdateName(name);
+        UpdateDescription(description);
+        ReplaceGenres(genres);
+    }
 
-        Name = name;
-        Description = description;
-        _genres = genres;
+    public void UpdateName(Title newName)
+    {
+        Name = newName ?? throw new ArgumentNullException(nameof(newName));
+    }
+
+    public void UpdateDescription(Description newDescription)
+    {
+        Description = newDescription ?? throw new ArgumentNullException(nameof(newDescription));
     }
 
     public void AddGenre(MusicGenre genre)
     {
         if (genre == null) throw new ArgumentNullException(nameof(genre));
-        if (_genres.Contains(genre)) throw new InvalidOperationException("Genre already exists.");
+        if (_genres.Contains(genre)) 
+            throw new InvalidOperationException($"Genre {genre} already exists in concept");
+            
         _genres.Add(genre);
+    }
+
+    public void AddGenres(IEnumerable<MusicGenre> genres)
+    {
+        if (genres == null) throw new ArgumentNullException(nameof(genres));
+        
+        foreach (var genre in genres.Distinct())
+        {
+            if (!_genres.Contains(genre))
+            {
+                _genres.Add(genre);
+            }
+        }
     }
 
     public void RemoveGenre(MusicGenre genre)
     {
         if (genre == null) throw new ArgumentNullException(nameof(genre));
-        if (!_genres.Contains(genre)) throw new InvalidOperationException("Genre not found.");
+        if (!_genres.Contains(genre))
+            throw new InvalidOperationException($"Genre {genre} not found in concept");
+            
         _genres.Remove(genre);
+        
+        if (_genres.Count == 0)
+            throw new InvalidOperationException("Concept must have at least one genre");
+    }
+
+    public void ReplaceGenres(IEnumerable<MusicGenre> newGenres)
+    {
+        if (newGenres == null || !newGenres.Any())
+            throw new ArgumentException("At least one genre must be provided", nameof(newGenres));
+            
+        _genres.Clear();
+        _genres.AddRange(newGenres.Distinct());
     }
 }

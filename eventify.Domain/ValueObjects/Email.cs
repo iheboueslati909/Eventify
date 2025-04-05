@@ -6,6 +6,8 @@ public class Email
 {
     public string Value { get; }
 
+    private Email() { } // Required for EF Core
+
     public Email(string value)
     {
         if (string.IsNullOrWhiteSpace(value))

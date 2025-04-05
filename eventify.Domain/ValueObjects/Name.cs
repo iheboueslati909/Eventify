@@ -4,6 +4,8 @@ public class Name
 {
     public string Value { get; }
 
+    private Name() { } // Required for EF Core
+
     public Name(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
