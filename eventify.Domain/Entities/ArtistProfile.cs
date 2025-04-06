@@ -8,7 +8,7 @@ public class ArtistProfile
     public Guid Id { get; private set; }
     public Guid MemberId { get; private set; } // The owner of the profile
     public Name ArtistName { get; private set; }
-    public Bio Bio { get; private set; } = Bio.Empty;
+    public Bio Bio { get; private set; }
     public IReadOnlyCollection<MusicGenre> Genres => _genres.AsReadOnly();
     public Email Email { get; private set; }
     public SocialMediaLinks SocialMediaLinks { get; private set; }
@@ -38,7 +38,7 @@ public class ArtistProfile
 
     public void UpdateBio(Bio newBio)
     {
-        Bio = newBio ?? Bio.Empty;
+        Bio = newBio;
     }
 
     public void UpdateEmail(Email newEmail)

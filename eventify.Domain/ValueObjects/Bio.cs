@@ -8,9 +8,6 @@ public class Bio
 
     public Bio(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Bio cannot be empty.");
-
         Value = value;
     }
 

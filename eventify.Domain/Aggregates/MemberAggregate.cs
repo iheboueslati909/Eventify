@@ -1,4 +1,7 @@
-﻿namespace eventify.Domain.Aggregates
+﻿using eventify.Domain.Enums;
+using eventify.Domain.ValueObjects;
+
+namespace eventify.Domain.Aggregates
 {
     public class MemberAggregate
     {

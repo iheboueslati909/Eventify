@@ -1,4 +1,5 @@
 ﻿namespace eventify.Domain.Entities;
+using eventify.Domain.ValueObjects;
 
 public class TimeTableSlot
 {

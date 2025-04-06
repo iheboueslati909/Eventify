@@ -7,7 +7,7 @@ namespace eventify.Domain.Entities;
 public class Event
 {
     public Guid Id { get; private set; }
-    public Title Name { get; private set; } // Changed from Title to Name for clarity
+    public Title Title { get; private set; } // Changed from Title to Name for clarity
     public Description Description { get; private set; }
     public DateRange DateRange { get; private set; } // Renamed from Date to DateRange
     public EventType Type { get; private set; }
@@ -26,7 +26,7 @@ public class Event
     // Domain-intent methods
     public void UpdateName(Title newName)
     {
-        Name = newName ?? throw new ArgumentNullException(nameof(newName));
+        Title = newName ?? throw new ArgumentNullException(nameof(newName));
     }
 
     public void UpdateDescription(Description newDescription)
@@ -44,7 +44,7 @@ public class Event
 
     public void ChangeType(EventType newType)
     {
-        Type = newType ?? throw new ArgumentNullException(nameof(newType));
+        Type = newType;
     }
 
     // Status transition methods

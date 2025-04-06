@@ -37,7 +37,7 @@ public class EventAggregate
         EndDate = endDate;
         Location = location;
         EventType = eventType;
-        Status = EventStatus.Scheduled;
+        Status = EventStatus.Published;
     }
 
     public void AddTimeTable(Guid timeTableId)
@@ -80,7 +80,7 @@ public class EventAggregate
         if (StartDate <= DateTime.UtcNow)
             throw new InvalidOperationException("Cannot cancel an ongoing or past event.");
 
-        Status = EventStatus.Cancelled;
+        Status = EventStatus.Canceled;
         // Raise domain event if needed
     }
 }

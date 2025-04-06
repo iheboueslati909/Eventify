@@ -1,8 +1,9 @@
 ﻿using eventify.Domain.Entities;
+using eventify.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using static MassTransit.MessageHeaders;
-namespace eventify.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+namespace eventify.Infrastructure.Persistence;
 
 public class EventsDbContext : DbContext
 {
@@ -10,113 +11,109 @@ public class EventsDbContext : DbContext
     public EventsDbContext() { }
 
     public DbSet<Event> Events { get; set; }
-    public DbSet<Member> Members { get; set; }
-    public DbSet<Club> Clubs { get; set; }
-    public DbSet<BookingInvitation> BookingInvitations { get; set; }
+    public DbSet<TimeTable> TimeTables { get; set; }
     public DbSet<TimeTableSlot> TimeTableSlots { get; set; }
+    public DbSet<Member> Members { get; set; }
+    public DbSet<Concept> Concepts { get; set; }
+    public DbSet<MemberEvent> MemberEvents { get; set; }
     public DbSet<RecordedPerformance> RecordedPerformances { get; set; }
-    public DbSet<NewsFeedItem> NewsFeedItems { get; set; }
+    public DbSet<ArtistProfile> ArtistProfiles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Member ↔ Event (Many-to-Many)
-        modelBuilder.Entity<MemberEvent>()
-            .HasKey(me => new { me.MemberId, me.EventId }); // Composite primary key
-
-        modelBuilder.Entity<MemberEvent>()
-            .HasOne(me => me.Member)
-            .WithMany(m => m.MemberEvents)
-            .HasForeignKey(me => me.MemberId)
+        // Event → TimeTable (One-to-Many)
+        modelBuilder.Entity<TimeTable>()
+            .HasOne<Event>()
+            .WithMany()
+            .HasForeignKey("EventId")
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<MemberEvent>()
-            .HasOne(me => me.Event)
-            .WithMany(e => e.MemberEvents)
-            .HasForeignKey(me => me.EventId)
+        // TimeTable → TimeTableSlot (One-to-Many)
+        modelBuilder.Entity<TimeTable>()
+            .HasMany(t => t.Slots)
+            .WithOne()
+            .HasForeignKey("TimeTableId")
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<MemberEvent>()
-            .HasIndex(me => me.MemberId); // Speeds up "get saved events for a member"
-
-        modelBuilder.Entity<MemberEvent>()
-            .HasIndex(me => me.EventId); // Speeds up "get members for an event"
-
-
-        // Event → Club (Many-to-One)
-        modelBuilder.Entity<Event>()
-            .HasOne(e => e.Club)
-            .WithMany(c => c.Events)
-            .HasForeignKey(e => e.ClubId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Event → TimeTableSlot (One-to-Many)
-        modelBuilder.Entity<Event>()
-            .HasMany(e => e.TimeTableSlots)
-            .WithOne(t => t.Event)
-            .HasForeignKey(t => t.EventId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Event → BookingInvitation (One-to-Many)
-        modelBuilder.Entity<Event>()
-            .HasMany(e => e.BookingInvitations)
-            .WithOne(b => b.Event)
-            .HasForeignKey(b => b.EventId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // ❌ Removed Event → RecordedPerformance
 
         // TimeTableSlot → RecordedPerformance (One-to-One)
-        modelBuilder.Entity<TimeTableSlot>()
-            .HasOne(t => t.RecordedPerformance)
-            .WithOne(r => r.TimeTableSlot)
-            .HasForeignKey<RecordedPerformance>(r => r.TimeTableSlotId)
-            .OnDelete(DeleteBehavior.Cascade); // ✅ No cycle issue
-
-        // BookingInvitation → Member (Many-to-One)
-        modelBuilder.Entity<BookingInvitation>()
-            .HasOne(b => b.Member)
-            .WithMany(m => m.BookingInvitations)
-            .HasForeignKey(b => b.MemberId)
+        modelBuilder.Entity<RecordedPerformance>()
+            .HasOne<TimeTableSlot>()
+            .WithOne()
+            .HasForeignKey<RecordedPerformance>("TimeTableSlotId")
             .OnDelete(DeleteBehavior.Cascade);
 
-        // NewsFeedItem → Member (Many-to-One)
-        modelBuilder.Entity<NewsFeedItem>()
-            .HasOne(n => n.Member)
+        // Member → Concept (One-to-Many)
+        modelBuilder.Entity<Concept>()
+            .HasOne<Member>()
             .WithMany()
-            .HasForeignKey(n => n.MemberId)
+            .HasForeignKey("MemberId")
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<NewsFeedItem>()
-            .HasIndex(p => p.MemberId); // Faster queries for user posts
+        // Member → MemberEvent (One-to-Many)
+        modelBuilder.Entity<MemberEvent>()
+            .HasOne<Member>()
+            .WithMany()
+            .HasForeignKey("MemberId")
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Event → MemberEvent (One-to-Many)
+        modelBuilder.Entity<MemberEvent>()
+            .HasOne<Event>()
+            .WithMany()
+            .HasForeignKey("EventId")
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ArtistProfile → Member (One-to-One)
+        modelBuilder.Entity<ArtistProfile>()
+            .HasOne<Member>()
+            .WithOne()
+            .HasForeignKey<ArtistProfile>("MemberId")
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Store Enums as Strings (Optional)
-        modelBuilder.Entity<BookingInvitation>()
-            .Property(b => b.Status)
-            .HasConversion<string>();
-
-        modelBuilder.Entity<RecordedPerformance>()
-            .Property(r => r.Type)
-            .HasConversion<string>();
-
         modelBuilder.Entity<Event>()
             .Property(e => e.Type)
             .HasConversion<string>();
 
-        // Configure Value Objects as Owned Types
-        modelBuilder.Entity<Member>()
-            .OwnsOne(m => m.Email, e =>
+        // Value Object Mappings
+        modelBuilder.Entity<Event>()
+            .OwnsOne(e => e.DateRange, dr =>
             {
-                e.Property(e => e.Value)
-                 .HasColumnName("Email")
-                 .IsRequired();
+                dr.Property(d => d.Start).HasColumnName("DateRange_Start");
+                dr.Property(d => d.End).HasColumnName("DateRange_End");
             });
 
         modelBuilder.Entity<Event>()
-            .OwnsOne(e => e.DateRange);
+            .OwnsOne(e => e.Title, t =>
+            {
+                t.Property(tt => tt.Value).HasColumnName("Title_Value");
+            });
 
-        modelBuilder.Entity<Event>()
-            .OwnsOne(e => e.Title);
+        modelBuilder.Entity<Member>()
+            .OwnsOne(m => m.Email, e =>
+            {
+                e.Property(em => em.Value).HasColumnName("Email");
+            });
+
+        modelBuilder.Entity<Club>()
+            .OwnsOne(c => c.Location, l =>
+            {
+                l.Property(loc => loc.Address).HasColumnName("Location_Address");
+            });
+
+        // Concept → MusicGenreCollection as comma-separated integers
+        var musicGenreConverter = new ValueConverter<MusicGenreCollection, string>(
+            v => v.ToString(),
+            v => MusicGenreCollection.FromString(v)
+        );
+
+        modelBuilder.Entity<Concept>()
+            .Property(typeof(MusicGenreCollection), "_musicGenres")
+            .HasConversion(musicGenreConverter)
+            .HasColumnName("MusicGenres")
+            .HasColumnType("varchar(255)");
+
     }
 }
