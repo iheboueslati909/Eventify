@@ -8,6 +8,8 @@ public class TimeTableSlot
     public TimeSpan StartTime { get; private set; }
     public TimeSpan EndTime { get; private set; }
     public Title Title { get; private set; }
+    private readonly List<Guid> _artistIds = new();
+    public IReadOnlyCollection<Guid> ArtistIds => _artistIds.AsReadOnly();
 
     private TimeTableSlot() { }
 

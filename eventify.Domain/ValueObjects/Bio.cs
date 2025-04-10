@@ -8,6 +8,10 @@ public class Bio
 
     public Bio(string value)
     {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException("Bio cannot be empty", nameof(value));
+        if (value.Length > 5000)
+            throw new ArgumentException("Bio cannot exceed 500 characters", nameof(value));
         Value = value;
     }
 

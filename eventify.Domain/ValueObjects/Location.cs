@@ -18,4 +18,6 @@ public class Location
         obj is Location location && Address == location.Address;
 
     public override int GetHashCode() => Address.GetHashCode();
+
+    //from string
 }
