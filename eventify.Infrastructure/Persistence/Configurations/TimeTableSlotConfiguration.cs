@@ -11,7 +11,7 @@ public class TimeTableSlotConfiguration : IEntityTypeConfiguration<TimeTableSlot
     {
         builder.HasOne<TimeTable>()
                .WithMany(t => t.Slots)
-               .HasForeignKey("TimeTableId")
+               .HasForeignKey(tt => tt.TimeTableId)
                .OnDelete(DeleteBehavior.Cascade);
 
         builder.OwnsOne(t => t.Title, tt =>

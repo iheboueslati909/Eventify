@@ -45,6 +45,21 @@ namespace eventify.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RecordedPerformances",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MediaUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastModified = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RecordedPerformances", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ArtistProfiles",
                 columns: table => new
                 {
@@ -59,7 +74,6 @@ namespace eventify.Infrastructure.Migrations
                     Facebook = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Instagram = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Youtube = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MemberId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Genres = table.Column<string>(type: "varchar(255)", nullable: false)
                 },
                 constraints: table =>
@@ -70,12 +84,7 @@ namespace eventify.Infrastructure.Migrations
                         column: x => x.MemberId,
                         principalTable: "Members",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ArtistProfiles_Members_MemberId1",
-                        column: x => x.MemberId1,
-                        principalTable: "Members",
-                        principalColumn: "Id");
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -131,9 +140,8 @@ namespace eventify.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StageName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    EventId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    EventId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    EventId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StageName = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -144,11 +152,6 @@ namespace eventify.Infrastructure.Migrations
                         principalTable: "Events",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TimeTables_Events_EventId1",
-                        column: x => x.EventId1,
-                        principalTable: "Events",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -172,38 +175,10 @@ namespace eventify.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "RecordedPerformances",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MediaUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    TimeTableSlotId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RecordedPerformances", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_RecordedPerformances_TimeTableSlots_TimeTableSlotId",
-                        column: x => x.TimeTableSlotId,
-                        principalTable: "TimeTableSlots",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_ArtistProfiles_MemberId",
                 table: "ArtistProfiles",
-                column: "MemberId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ArtistProfiles_MemberId1",
-                table: "ArtistProfiles",
-                column: "MemberId1");
+                column: "MemberId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Concepts_MemberId",
@@ -232,21 +207,9 @@ namespace eventify.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_RecordedPerformances_TimeTableSlotId",
-                table: "RecordedPerformances",
-                column: "TimeTableSlotId",
-                unique: true,
-                filter: "[TimeTableSlotId] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TimeTables_EventId",
                 table: "TimeTables",
                 column: "EventId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TimeTables_EventId1",
-                table: "TimeTables",
-                column: "EventId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TimeTableSlots_TimeTableId",

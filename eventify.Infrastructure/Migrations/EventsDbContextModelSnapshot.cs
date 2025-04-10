@@ -66,9 +66,6 @@ namespace eventify.Infrastructure.Migrations
                     b.Property<Guid>("MemberId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("MemberId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("_genres")
                         .IsRequired()
                         .HasColumnType("varchar(255)")
@@ -76,10 +73,7 @@ namespace eventify.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MemberId")
-                        .IsUnique();
-
-                    b.HasIndex("MemberId1");
+                    b.HasIndex("MemberId");
 
                     b.ToTable("ArtistProfiles");
                 });
@@ -173,18 +167,11 @@ namespace eventify.Infrastructure.Migrations
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("TimeTableSlotId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TimeTableSlotId")
-                        .IsUnique()
-                        .HasFilter("[TimeTableSlotId] IS NOT NULL");
 
                     b.ToTable("RecordedPerformances");
                 });
@@ -195,17 +182,12 @@ namespace eventify.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("EventId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("EventId1")
+                    b.Property<Guid>("EventId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EventId");
-
-                    b.HasIndex("EventId1");
 
                     b.ToTable("TimeTables");
                 });
@@ -235,14 +217,10 @@ namespace eventify.Infrastructure.Migrations
             modelBuilder.Entity("eventify.Domain.Entities.ArtistProfile", b =>
                 {
                     b.HasOne("eventify.Domain.Entities.Member", null)
-                        .WithOne()
-                        .HasForeignKey("eventify.Domain.Entities.ArtistProfile", "MemberId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("eventify.Domain.Entities.Member", null)
                         .WithMany("ArtistProfiles")
-                        .HasForeignKey("MemberId1");
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.OwnsOne("eventify.Domain.ValueObjects.Name", "ArtistName", b1 =>
                         {
@@ -556,11 +534,6 @@ namespace eventify.Infrastructure.Migrations
 
             modelBuilder.Entity("eventify.Domain.Entities.RecordedPerformance", b =>
                 {
-                    b.HasOne("eventify.Domain.Entities.TimeTableSlot", null)
-                        .WithOne()
-                        .HasForeignKey("eventify.Domain.Entities.RecordedPerformance", "TimeTableSlotId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.OwnsOne("eventify.Domain.ValueObjects.Url", "MediaUrl", b1 =>
                         {
                             b1.Property<Guid>("RecordedPerformanceId")
@@ -586,13 +559,10 @@ namespace eventify.Infrastructure.Migrations
             modelBuilder.Entity("eventify.Domain.Entities.TimeTable", b =>
                 {
                     b.HasOne("eventify.Domain.Entities.Event", null)
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("eventify.Domain.Entities.Event", null)
                         .WithMany("TimeTables")
-                        .HasForeignKey("EventId1");
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.OwnsOne("eventify.Domain.ValueObjects.Title", "StageName", b1 =>
                         {

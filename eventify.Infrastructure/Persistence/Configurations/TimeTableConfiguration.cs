@@ -9,14 +9,9 @@ public class TimeTableConfiguration : IEntityTypeConfiguration<TimeTable>
 {
     public void Configure(EntityTypeBuilder<TimeTable> builder)
     {
-        builder.HasMany(t => t.Slots)
-               .WithOne()
-               .HasForeignKey("TimeTableId")
-               .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasOne<Event>()
-               .WithMany()
-               .HasForeignKey("EventId")
+               .WithMany( e => e.TimeTables)
+               .HasForeignKey(t => t.EventId)
                .OnDelete(DeleteBehavior.Cascade);
 
         builder.OwnsOne(ap => ap.StageName, an =>

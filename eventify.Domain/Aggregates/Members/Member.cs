@@ -15,9 +15,6 @@ public class Member
     public bool IsDeleted { get; private set; } = false;
     private readonly List<ArtistProfile> _artistProfiles = new();
     public IReadOnlyCollection<ArtistProfile> ArtistProfiles => _artistProfiles.AsReadOnly();
-    private readonly List<Guid> _followedConceptIds = new();
-    public IReadOnlyCollection<Guid> FollowedConceptIds => _followedConceptIds.AsReadOnly();
-
     private Member() { }
 
     private Member(Name firstName, Name lastName, Email email, Password password)
@@ -53,20 +50,7 @@ public class Member
         _artistProfiles.Add(profile);
         return profile;
     }
-
-    public void FollowConcept(Guid conceptId)
-    {
-        if (_followedConceptIds.Contains(conceptId))
-            throw new InvalidOperationException("Already following this concept.");
-
-        _followedConceptIds.Add(conceptId);
-    }
-
-    public void UnfollowConcept(Guid conceptId)
-    {
-        _followedConceptIds.Remove(conceptId);
-    }
-
+    
     public void SoftDelete()
     {
         IsDeleted = true;

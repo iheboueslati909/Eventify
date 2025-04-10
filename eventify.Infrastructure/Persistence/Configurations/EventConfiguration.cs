@@ -44,17 +44,11 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
                .IsRequired();
         });
 
-        builder.HasMany<TimeTable>()
-            .WithOne()
-            .HasForeignKey("EventId")
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasOne<Concept>()
             .WithMany()
             .HasForeignKey(e => e.ConceptId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        
+ 
         builder.HasIndex(e => e.ConceptId);
         builder.HasIndex(e => e.Status);
         builder.HasIndex(e => new { e.StartDate, e.EndDate });

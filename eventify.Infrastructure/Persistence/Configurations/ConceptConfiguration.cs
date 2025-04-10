@@ -35,8 +35,8 @@ public class ConceptConfiguration : IEntityTypeConfiguration<Concept>
 
         // Map relationship with Member
         builder.HasOne<Member>()
-               .WithMany()
-               .HasForeignKey("MemberId")
-               .OnDelete(DeleteBehavior.Cascade);
+            .WithMany()
+            .HasForeignKey(t => t.MemberId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

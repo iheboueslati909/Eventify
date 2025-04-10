@@ -16,9 +16,6 @@ public class Concept
 
     private MusicGenreCollection _genres = MusicGenreCollection.Empty;
     public IReadOnlyCollection<MusicGenre> Genres => _genres.Genres;
-    private readonly List<Guid> _eventsIds = new();
-    public IReadOnlyCollection<Guid> EventsIds => _eventsIds.AsReadOnly();
-
     private Concept() { }
 
     private Concept(Guid memberId, Title title, Description description, IEnumerable<MusicGenre> genres)
@@ -45,36 +42,6 @@ public class Concept
         Description = description ?? throw new ArgumentNullException(nameof(description));
         if (genres == null) throw new ArgumentNullException(nameof(genres));
         _genres = new MusicGenreCollection(genres);
-    }
-
-    public void deleteConcept(List<Event> events)
-    {
-        if (events.Any(e => e.Status == EventStatus.Published))
-            throw new InvalidOperationException("Cannot delete concept with published events.");
-
-        foreach (var eventItem in events)
-        {
-            if (eventItem.ConceptId == Id)
-            {
-                eventItem.Cancel();
-            }
-        }
-    }
-
-    public void AddEvent(Guid eventId)
-    {
-        if (_eventsIds.Contains(eventId))
-            throw new InvalidOperationException("Event already exists in this concept.");
-
-        _eventsIds.Add(eventId);
-    }
-
-    public void RemoveEvent(Guid eventId)
-    {
-        if (!_eventsIds.Contains(eventId))
-            throw new InvalidOperationException("Event does not exist in this concept.");
-
-        _eventsIds.Remove(eventId);
     }
 
     public void SoftDelete()

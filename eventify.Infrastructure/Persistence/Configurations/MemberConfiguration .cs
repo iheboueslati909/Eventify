@@ -36,10 +36,5 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
                 .HasColumnName("LastName")
                 .IsRequired();
         });
-
-        builder.HasMany<Concept>()
-               .WithOne()
-               .HasForeignKey("MemberId")
-               .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -19,9 +19,9 @@ public class RecordedPerformanceConfiguration : IEntityTypeConfiguration<Recorde
                .IsRequired();
         });
 
-        builder.HasOne<TimeTableSlot>()
-               .WithOne()
-               .HasForeignKey<RecordedPerformance>("TimeTableSlotId")
-               .OnDelete(DeleteBehavior.Cascade);
+        // builder.HasOne<TimeTableSlot>()
+        //        .WithOne()
+        //        .HasForeignKey<RecordedPerformance>("TimeTableSlotId")
+        //        .OnDelete(DeleteBehavior.Cascade);
     }
 }

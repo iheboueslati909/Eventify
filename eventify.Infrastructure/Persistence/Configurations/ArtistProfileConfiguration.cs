@@ -72,8 +72,8 @@ public class ArtistProfileConfiguration : IEntityTypeConfiguration<ArtistProfile
 
         // One-to-one with Member
         builder.HasOne<Member>()
-               .WithOne()
-               .HasForeignKey<ArtistProfile>("MemberId")
-               .OnDelete(DeleteBehavior.Restrict);
+            .WithMany(m => m.ArtistProfiles)
+            .HasForeignKey(t => t.MemberId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
