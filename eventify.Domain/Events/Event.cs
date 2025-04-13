@@ -46,6 +46,9 @@ public class Event
         return new Event(title, description, startDate, endDate, location, type, conceptId);
     }   
 
+    //isPublished
+    public bool IsPublished => Status == EventStatus.Published;
+
     public void UpdateDetails(Title title, Description description, DateTime startDate, DateTime endDate, Location location, EventType type)
     {
         Title = title;

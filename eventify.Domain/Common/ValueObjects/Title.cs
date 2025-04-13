@@ -6,12 +6,20 @@ public class Title
 
     private Title() { } // Required for EF Core
 
-    public Title(string value)
+    private Title(string value)
+    {
+        Value = value;
+    }
+
+    public static Result<Title> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Title cannot be empty.");
+            return Result<Title>.Failure("Title cannot be empty.");
 
-        Value = value;
+        if (value.Length > 100)
+            return Result<Title>.Failure("Title must not exceed 100 characters.");
+
+        return Result<Title>.Success(new Title(value));
     }
 
     public override string ToString() => Value;

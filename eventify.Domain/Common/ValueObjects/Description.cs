@@ -6,12 +6,20 @@ public class Description
 
     private Description() { } // Required for EF Core
 
-    public Description(string value)
+    private Description(string value)
+    {
+        Value = value;
+    }
+
+    public static Result<Description> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Description cannot be empty.");
+            return Result<Description>.Failure("Description cannot be empty.");
 
-        Value = value;
+        if (value.Length > 500)
+            return Result<Description>.Failure("Description must not exceed 500 characters.");
+
+        return Result<Description>.Success(new Description(value));
     }
 
     public override string ToString() => Value;
