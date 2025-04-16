@@ -1,4 +1,6 @@
-public interface IMemberRepository
+using eventify.Domain.Entities;
+using eventify.Application.Common.Interfaces;
+public interface IMemberRepository : IRepository<Member>
 {
     
 }
