@@ -18,20 +18,21 @@ public class Concept
     public IReadOnlyCollection<MusicGenre> Genres => _genres.Genres;
     private Concept() { }
 
-    private Concept(Guid memberId, Title title, Description description, IEnumerable<MusicGenre> genres)
+    private Concept(Guid memberId, Title title, Description description, MusicGenreCollection  genres)
     {
         Id = Guid.NewGuid();
         MemberId = memberId;
         Title = title;
         Description = description;
-        _genres = new MusicGenreCollection(genres ?? throw new ArgumentNullException(nameof(genres)));
+        _genres = genres;
     }
 
-    public static Concept Create(Guid memberId, Title title, Description description, IEnumerable<MusicGenre> genres)
+    public static Concept Create(Guid memberId, Title title, Description description, MusicGenreCollection genres)
     {
-        if (title == null) throw new ArgumentNullException(nameof(title));
-        if (description == null) throw new ArgumentNullException(nameof(description));
-        if (genres == null) throw new ArgumentNullException(nameof(genres));
+        ArgumentNullException.ThrowIfNull(memberId);
+        ArgumentNullException.ThrowIfNull(title);
+        ArgumentNullException.ThrowIfNull(description);
+        ArgumentNullException.ThrowIfNull(genres);
 
         return new Concept(memberId, title, description, genres);
     }
