@@ -50,6 +50,17 @@ public class Member
         _artistProfiles.Add(profile);
         return profile;
     }
+
+    public void UpdateInformation(Name firstName, Name lastName, Email email)
+    {
+        if (firstName == null) throw new ArgumentNullException(nameof(firstName));
+        if (lastName == null) throw new ArgumentNullException(nameof(lastName));
+        if (email == null) throw new ArgumentNullException(nameof(email));
+
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+    }
     
     public void SoftDelete()
     {
