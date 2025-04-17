@@ -1,4 +1,5 @@
 namespace Eventify.Domain.Members;
+using eventify.SharedKernel;
 
 public class MemberFollow
 {

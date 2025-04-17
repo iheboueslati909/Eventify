@@ -1,15 +1,21 @@
 namespace eventify.Domain.ValueObjects;
+using eventify.SharedKernel;
 
 public class Location
 {
     public string Address { get; }
 
-    public Location(string address)
+    private Location(string address)
+    {
+        Address = address;
+    }
+
+    public static Result<Location> Create(string address)
     {
         if (string.IsNullOrWhiteSpace(address))
-            throw new ArgumentException("Location address cannot be empty.");
+            return Result.Failure<Location>("Location address cannot be empty.");
 
-        Address = address;
+        return Result.Success(new Location(address));
     }
 
     public override string ToString() => Address;

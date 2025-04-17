@@ -1,5 +1,6 @@
 ﻿using eventify.Domain.Enums;
 using eventify.Domain.ValueObjects;
+using eventify.SharedKernel;
 
 namespace eventify.Domain.Entities;
 
@@ -17,61 +18,53 @@ public class ArtistProfile
 
     private ArtistProfile() { } // Required for EF Core
 
-    public ArtistProfile(
+    private ArtistProfile(
         Guid memberId,
         Name artistName,
         Email email,
         SocialMediaLinks socialMediaLinks,
         IEnumerable<MusicGenre> genres)
     {
-        UpdateMemberId(memberId);
-        UpdateArtistName(artistName);
-        UpdateEmail(email);
-        UpdateSocialMediaLinks(socialMediaLinks);
-        ReplaceGenres(genres);
-    }
-
-    public void UpdateArtistName(Name newName)
-    {
-        ArtistName = newName ?? throw new ArgumentNullException(nameof(newName));
-    }
-
-    public void UpdateBio(Bio newBio)
-    {
-        Bio = newBio; // Optional, so no null check
-    }
-
-    public void UpdateEmail(Email newEmail)
-    {
-        Email = newEmail ?? throw new ArgumentNullException(nameof(newEmail));
-    }
-
-    public void UpdateSocialMediaLinks(SocialMediaLinks newLinks)
-    {
-        SocialMediaLinks = newLinks ?? throw new ArgumentNullException(nameof(newLinks));
-    }
-
-    public void UpdateMemberId(Guid memberId)
-    {
-        if (memberId == Guid.Empty)
-            throw new ArgumentException("Member ID cannot be empty", nameof(memberId));
-
+        Id = Guid.NewGuid();
         MemberId = memberId;
+        ArtistName = artistName;
+        Email = email;
+        SocialMediaLinks = socialMediaLinks;
+        _genres = new MusicGenreCollection(genres);
     }
 
-    public void ReplaceGenres(IEnumerable<MusicGenre> newGenres)
+    public static Result<ArtistProfile> Create(
+        Guid memberId,
+        Name artistName,
+        Email email,
+        SocialMediaLinks socialMediaLinks,
+        IEnumerable<MusicGenre> genres)
     {
-        _genres = new MusicGenreCollection(newGenres);
+        if (memberId == Guid.Empty) return Result.Failure<ArtistProfile>("Member ID cannot be empty");
+        if (artistName == null) return Result.Failure<ArtistProfile>("Artist name cannot be null");
+        if (email == null) return Result.Failure<ArtistProfile>("Email cannot be null");
+        if (socialMediaLinks == null) return Result.Failure<ArtistProfile>("Social media links cannot be null");
+        if (genres == null) return Result.Failure<ArtistProfile>("Genres collection cannot be null");
+
+        return Result.Success(new ArtistProfile(memberId, artistName, email, socialMediaLinks, genres));
     }
 
-    public void AddGenre(MusicGenre genre)
+    public Result UpdateInformation(
+        Name artistName,
+        Email email,
+        SocialMediaLinks socialMediaLinks,
+        IEnumerable<MusicGenre> genres)
     {
-        _genres = _genres.Add(genre);
-    }
+        if (artistName == null) return Result.Failure("Artist name cannot be null");
+        if (email == null) return Result.Failure("Email cannot be null");
+        if (socialMediaLinks == null) return Result.Failure("Social media links cannot be null");
+        if (genres == null) return Result.Failure("Genres collection cannot be null");
 
-    public void RemoveGenre(MusicGenre genre)
-    {
-        _genres = _genres.Remove(genre);
+        ArtistName = artistName;
+        Email = email;
+        SocialMediaLinks = socialMediaLinks;
+        _genres = new MusicGenreCollection(genres);
+        return Result.Success();
     }
     
     public void SoftDelete()

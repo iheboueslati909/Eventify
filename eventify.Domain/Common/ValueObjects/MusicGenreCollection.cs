@@ -1,6 +1,8 @@
 using eventify.Domain.Enums;
+using eventify.SharedKernel;
 
 namespace eventify.Domain.ValueObjects;
+
 public class MusicGenreCollection
 {
     private readonly List<MusicGenre> _genres;

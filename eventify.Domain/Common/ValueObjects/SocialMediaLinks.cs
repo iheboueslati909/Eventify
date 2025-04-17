@@ -1,4 +1,5 @@
 namespace eventify.Domain.ValueObjects;
+using eventify.SharedKernel;
 
 public class SocialMediaLinks
 {

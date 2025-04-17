@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using eventify.SharedKernel;
 
 namespace eventify.Domain.ValueObjects
 {
@@ -8,15 +9,20 @@ namespace eventify.Domain.ValueObjects
 
         private Url() { }
 
-        public Url(string url)
+        private Url(string url)
+        {
+            Value = url;
+        }
+
+        public static Result<Url> Create(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentException("URL cannot be empty.");
+                return Result.Failure<Url>("URL cannot be empty.");
 
             if (!Regex.IsMatch(url, @"^(https?|ftp):\/\/[\w\-]+(\.[\w\-]+)+([\w\-.,@?^=%&:/~+#]*[\w\-@?^=%&/~+#])?$"))
-                throw new ArgumentException("Invalid URL format.");
+                return Result.Failure<Url>("Invalid URL format.");
 
-            Value = url;
+            return Result.Success(new Url(url));
         }
 
         public override string ToString() => Value;

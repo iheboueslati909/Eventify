@@ -1,7 +1,9 @@
 ﻿using eventify.Domain.Enums;
 using eventify.Domain.ValueObjects;
+using eventify.Domain.Common;
 using System;
 using System.Collections.Generic;
+using eventify.SharedKernel;
 
 namespace eventify.Domain.Entities;
 
@@ -37,13 +39,19 @@ public class Event
 
     }
 
-    public static Event Create(Title title, Description description, DateTime startDate, DateTime endDate, Location location, EventType type,  Guid conceptId)
+    public static Result<Event> Create(Title title, Description description, DateTime startDate, DateTime endDate, Location location, EventType type, Guid conceptId)
     {
+        if (startDate >= endDate)
+            return Result.Failure<Event>("End date must be after start date");
+
+        if (startDate < DateTime.UtcNow)
+            return Result.Failure<Event>("Start date cannot be in the past");
+
         if (title == null) throw new ArgumentNullException(nameof(title));
         if (description == null) throw new ArgumentNullException(nameof(description));
         if (location == null) throw new ArgumentNullException(nameof(location));
 
-        return new Event(title, description, startDate, endDate, location, type, conceptId);
+        return Result.Success(new Event(title, description, startDate, endDate, location, type, conceptId));
     }   
 
     //isPublished
@@ -59,32 +67,35 @@ public class Event
         Type = type;
     }
 
-    public void Publish()
+    public Result Publish()
     {
         if (Status != EventStatus.Draft)
-            throw new InvalidOperationException("Only draft events can be published");
+            return Result.Failure("Only draft events can be published");
 
         Status = EventStatus.Published;
+        return Result.Success();
     }
 
-    public void Cancel()
+    public Result Cancel()
     {
         if (Status == EventStatus.Canceled)
-            throw new InvalidOperationException("Event is already canceled");
+            return Result.Failure("Event is already canceled");
         if (Status == EventStatus.Completed)
-            throw new InvalidOperationException("Cannot cancel a completed event");
+            return Result.Failure("Cannot cancel a completed event");
 
         Status = EventStatus.Canceled;
+        return Result.Success();
     }
 
-    public void Complete()
+    public Result Complete()
     {
         if (Status != EventStatus.Published)
-            throw new InvalidOperationException("Only published events can be completed");
+            return Result.Failure("Only published events can be completed");
         if (DateTime.UtcNow < EndDate)
-            throw new InvalidOperationException("Cannot complete event before end date");
+            return Result.Failure("Cannot complete event before end date");
 
         Status = EventStatus.Completed;
+        return Result.Success();
     }
 
     public void Reopen()

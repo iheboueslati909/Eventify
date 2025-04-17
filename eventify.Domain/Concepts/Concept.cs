@@ -2,6 +2,7 @@
 using eventify.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using eventify.SharedKernel;
 
 namespace eventify.Domain.Entities;
 
@@ -18,7 +19,7 @@ public class Concept
     public IReadOnlyCollection<MusicGenre> Genres => _genres.Genres;
     private Concept() { }
 
-    private Concept(Guid memberId, Title title, Description description, MusicGenreCollection  genres)
+    private Concept(Guid memberId, Title title, Description description, MusicGenreCollection genres)
     {
         Id = Guid.NewGuid();
         MemberId = memberId;
@@ -27,22 +28,33 @@ public class Concept
         _genres = genres;
     }
 
-    public static Concept Create(Guid memberId, Title title, Description description, MusicGenreCollection genres)
+    public static Result<Concept> Create(Guid memberId, Title title, Description description, MusicGenreCollection genres)
     {
-        ArgumentNullException.ThrowIfNull(memberId);
-        ArgumentNullException.ThrowIfNull(title);
-        ArgumentNullException.ThrowIfNull(description);
-        ArgumentNullException.ThrowIfNull(genres);
+        if (memberId == Guid.Empty)
+            return Result.Failure<Concept>("Member ID cannot be empty.");
+        if (title == null)
+            return Result.Failure<Concept>("Title cannot be null.");
+        if (description == null)
+            return Result.Failure<Concept>("Description cannot be null.");
+        if (genres == null)
+            return Result.Failure<Concept>("Genres cannot be null.");
 
-        return new Concept(memberId, title, description, genres);
+        return Result.Success(new Concept(memberId, title, description, genres));
     }
 
-    public void UpdateInformation(Title title, Description description, IEnumerable<MusicGenre> genres)
+    public Result UpdateInformation(Title title, Description description, IEnumerable<MusicGenre> genres)
     {
-        Title = title ?? throw new ArgumentNullException(nameof(title));
-        Description = description ?? throw new ArgumentNullException(nameof(description));
-        if (genres == null) throw new ArgumentNullException(nameof(genres));
+        if (title == null)
+            return Result.Failure("Title cannot be null.");
+        if (description == null)
+            return Result.Failure("Description cannot be null.");
+        if (genres == null)
+            return Result.Failure("Genres cannot be null.");
+
+        Title = title;
+        Description = description;
         _genres = new MusicGenreCollection(genres);
+        return Result.Success();
     }
 
     public void SoftDelete()

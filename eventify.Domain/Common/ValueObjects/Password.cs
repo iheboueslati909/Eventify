@@ -1,4 +1,5 @@
 namespace eventify.Domain.ValueObjects;
+using eventify.SharedKernel;
 
 public class Password
 {
@@ -6,12 +7,17 @@ public class Password
 
     private Password() { } // Required for EF Core
 
-    public Password(string hash)
+    private Password(string hash)
+    {
+        Hash = hash;
+    }
+
+    public static Result<Password> Create(string hash)
     {
         if (string.IsNullOrWhiteSpace(hash))
-            throw new ArgumentException("Password hash cannot be empty.");
+            return Result.Failure<Password>("Password hash cannot be empty.");
 
-        Hash = hash;
+        return Result.Success(new Password(hash));
     }
 
     public override string ToString() => Hash;

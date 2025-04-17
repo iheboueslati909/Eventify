@@ -1,4 +1,5 @@
 ﻿using eventify.Domain.ValueObjects;
+using eventify.SharedKernel;
 
 namespace eventify.Domain.Entities;
 
@@ -12,7 +13,7 @@ public class TimeTable
 
     private TimeTable() { } // EF Core
 
-    public TimeTable(Title stageName, List<TimeTableSlot> initialSlots, Guid eventId)
+    private TimeTable(Title stageName, List<TimeTableSlot> initialSlots, Guid eventId)
     {
         if (initialSlots == null || !initialSlots.Any())
             throw new ArgumentException("TimeTable must have at least one slot");
@@ -23,12 +24,24 @@ public class TimeTable
         EventId = eventId;
     }
 
-    public void UpdateTimeTableSlots(List<TimeTableSlot> newSlots)
+    public static Result<TimeTable> Create(Title stageName, List<TimeTableSlot> initialSlots, Guid eventId)
     {
+        if (stageName == null)
+            return Result.Failure<TimeTable>("Stage name cannot be null");
+            
+        if (initialSlots == null || !initialSlots.Any())
+            return Result.Failure<TimeTable>("TimeTable must have at least one slot");
+
+        return Result.Success(new TimeTable(stageName, initialSlots, eventId));
+    }
+
+    public Result UpdateTimeTableSlots(List<TimeTableSlot> newSlots)
+    {// TODO: Enforce no overlapping slots or duplicate artists
         if (newSlots == null || !newSlots.Any())
-            throw new ArgumentException("TimeTable must have at least one slot");
+            return Result.Failure("TimeTable must have at least one slot");
 
         _slots.Clear();
         _slots.AddRange(newSlots);
+        return Result.Success();
     }
 }

@@ -1,3 +1,6 @@
+using eventify.Domain.Common;
+using eventify.SharedKernel;
+
 namespace eventify.Domain.ValueObjects;
 
 public class Bio
@@ -6,13 +9,20 @@ public class Bio
 
     private Bio() { } // Required for EF Core
 
-    public Bio(string value)
+    private Bio(string value)
+    {
+        Value = value;
+    }
+
+    public static Result<Bio> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Bio cannot be empty", nameof(value));
+            return Result.Failure<Bio>("Bio cannot be empty");
+
         if (value.Length > 5000)
-            throw new ArgumentException("Bio cannot exceed 500 characters", nameof(value));
-        Value = value;
+            return Result.Failure<Bio>("Bio cannot exceed 5000 characters");
+
+        return Result.Success(new Bio(value));
     }
 
     public override string ToString() => Value;

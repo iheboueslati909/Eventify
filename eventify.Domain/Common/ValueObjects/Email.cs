@@ -1,4 +1,6 @@
 ﻿using System.Text.RegularExpressions;
+using eventify.Domain.Common;
+using eventify.SharedKernel;
 
 namespace eventify.Domain.ValueObjects;
 
@@ -6,17 +8,22 @@ public class Email
 {
     public string Value { get; }
 
+    private Email(string value)
+    {
+        Value = value;
+    }
+
     private Email() { } // Required for EF Core
 
-    public Email(string value)
+    public static Result<Email> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Email cannot be empty.");
+            return Result.Failure<Email>("Email cannot be empty.");
 
         if (!Regex.IsMatch(value, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-            throw new ArgumentException("Invalid email format.");
+            return Result.Failure<Email>("Invalid email format.");
 
-        Value = value;
+        return Result.Success(new Email(value));
     }
 
     public override string ToString() => Value;

@@ -21,22 +21,36 @@ public class RecordedPerformance
         CreatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateMediaUrl(Url newUrl)
+    public static Result<RecordedPerformance> Create(Url mediaUrl, PerformanceType type)
     {
-        MediaUrl = newUrl ?? throw new ArgumentNullException(nameof(newUrl));
-        LastModified = DateTime.UtcNow;
+        if (mediaUrl == null)
+            return Result.Failure<RecordedPerformance>("Media URL cannot be null.");
+        if (!Enum.IsDefined(typeof(PerformanceType), type))
+            return Result.Failure<RecordedPerformance>("Invalid performance type.");
+
+        return Result.Success(new RecordedPerformance(mediaUrl, type));
     }
 
-    public void ChangePerformanceType(PerformanceType newType)
+    public Result UpdateMediaUrl(Url newUrl)
+    {
+        if (newUrl == null)
+            return Result.Failure("Media URL cannot be null.");
+
+        MediaUrl = newUrl;
+        LastModified = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public Result ChangePerformanceType(PerformanceType newType)
     {
         if (!Enum.IsDefined(typeof(PerformanceType), newType))
-            throw new ArgumentException("Invalid performance type", nameof(newType));
+            return Result.Failure("Invalid performance type.");
 
         Type = newType;
         LastModified = DateTime.UtcNow;
+        return Result.Success();
     }
 
-    // Optional: Media metadata update method
     public void UpdateMedia(Url newUrl, PerformanceType newType)
     {
         UpdateMediaUrl(newUrl);
