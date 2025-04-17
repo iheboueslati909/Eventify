@@ -1,11 +1,12 @@
 using eventify.Application.Common.Interfaces;
+using eventify.Domain.Common;
 using eventify.Domain.Entities;
 using eventify.Domain.ValueObjects;
-using MediatR;
+using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Commands;
 
-public class CreateMemberCommand : IRequest<Guid>
+public class CreateMemberCommand
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
@@ -13,27 +14,37 @@ public class CreateMemberCommand : IRequest<Guid>
     public string Password { get; set; } = string.Empty;
 }
 
-public class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand, Guid>
+public class CreateMemberHandler
 {
     private readonly IMemberRepository _memberRepository;
 
-    public CreateMemberCommandHandler(IMemberRepository memberRepository)
+    public CreateMemberHandler(IMemberRepository memberRepository)
     {
         _memberRepository = memberRepository;
     }
 
-    public async Task<Guid> Handle(CreateMemberCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(CreateMemberCommand request)
     {
-        var member = Member.Create(
-            new Name(request.FirstName),
-            new Name(request.LastName),
-            new Email(request.Email),
-            new Password(request.Password)
-        );
+        if (await _memberRepository.EmailExistsAsync(request.Email))
+            return Result.Failure<Guid>("Email already exists");
 
-        await _memberRepository.AddAsync(member);
-        await _memberRepository.SaveChangesAsync();
+        try
+        {
+            var member = Member.Create(
+                new Name(request.FirstName),
+                new Name(request.LastName),
+                new Email(request.Email),
+                new Password(request.Password)
+            );
 
-        return member.Id;
+            await _memberRepository.AddAsync(member);
+            await _memberRepository.SaveChangesAsync();
+
+            return Result.Success(member.Id);
+        }
+        catch (ArgumentException ex)
+        {
+            return Result.Failure<Guid>(ex.Message);
+        }
     }
 }

@@ -1,14 +1,15 @@
 using eventify.Application.Common.Interfaces;
-using MediatR;
+using eventify.Domain.Common;
+using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Commands;
 
-public class DeleteMemberCommand : IRequest
+public class DeleteMemberCommand
 {
     public Guid Id { get; set; }
 }
 
-public class DeleteMemberCommandHandler : IRequestHandler<DeleteMemberCommand>
+public class DeleteMemberCommandHandler
 {
     private readonly IMemberRepository _memberRepository;
 
@@ -17,17 +18,16 @@ public class DeleteMemberCommandHandler : IRequestHandler<DeleteMemberCommand>
         _memberRepository = memberRepository;
     }
 
-    public async Task<Unit> Handle(DeleteMemberCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteMemberCommand request)
     {
         var member = await _memberRepository.GetByIdAsync(request.Id);
+        
         if (member == null)
-        {
-            throw new KeyNotFoundException("Member not found.");
-        }
+            return Result.Failure("Member not found");
 
-        _memberRepository.Remove(member);
+        member.SoftDelete();
         await _memberRepository.SaveChangesAsync();
-
-        return Unit.Value;
+        
+        return Result.Success();
     }
 }

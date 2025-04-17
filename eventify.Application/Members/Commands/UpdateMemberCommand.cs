@@ -1,10 +1,11 @@
 using eventify.Application.Common.Interfaces;
 using eventify.Domain.ValueObjects;
-using MediatR;
+using eventify.Domain.Common;
+using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Commands;
 
-public class UpdateMemberCommand : IRequest
+public class UpdateMemberCommand
 {
     public Guid Id { get; set; }
     public string FirstName { get; set; } = string.Empty;
@@ -12,7 +13,7 @@ public class UpdateMemberCommand : IRequest
     public string Email { get; set; } = string.Empty;
 }
 
-public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand>
+public class UpdateMemberCommandHandler
 {
     private readonly IMemberRepository _memberRepository;
 
@@ -21,23 +22,27 @@ public class UpdateMemberCommandHandler : IRequestHandler<UpdateMemberCommand>
         _memberRepository = memberRepository;
     }
 
-    public async Task<Unit> Handle(UpdateMemberCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateMemberCommand request)
     {
         var member = await _memberRepository.GetByIdAsync(request.Id);
+        
         if (member == null)
+            return Result.Failure("Member not found");
+
+        try
         {
-            throw new KeyNotFoundException("Member not found.");
+            member.UpdateInformation(
+                new Name(request.FirstName),
+                new Name(request.LastName),
+                new Email(request.Email)
+            );
+
+            await _memberRepository.SaveChangesAsync();
+            return Result.Success();
         }
-
-        member.UpdateInformation(
-            new Name(request.FirstName),
-            new Name(request.LastName),
-            new Email(request.Email)
-        );
-
-        _memberRepository.Update(member);
-        await _memberRepository.SaveChangesAsync();
-
-        return Unit.Value;
+        catch (ArgumentException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
     }
 }
