@@ -4,10 +4,7 @@ using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Queries;
 
-public class GetMemberByIdQuery
-{
-    public Guid Id { get; set; }
-}
+public record GetMemberByIdQuery(Guid Id);
 
 public class GetMemberByIdQueryHandler
 {

@@ -1,17 +1,14 @@
 using eventify.Application.Common.Interfaces;
 using eventify.Domain.ValueObjects;
-using eventify.Domain.Common;
 using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Commands;
 
-public class UpdateMemberCommand
-{
-    public Guid Id { get; set; }
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-}
+public record UpdateMemberCommand(
+    Guid Id,
+    string FirstName,
+    string LastName,
+    string Email);
 
 public class UpdateMemberCommandHandler
 {
@@ -29,20 +26,26 @@ public class UpdateMemberCommandHandler
         if (member == null)
             return Result.Failure("Member not found");
 
-        try
-        {
-            member.UpdateInformation(
-                new Name(request.FirstName),
-                new Name(request.LastName),
-                new Email(request.Email)
-            );
+        var firstNameResult = Name.Create(request.FirstName);
+        var lastNameResult = Name.Create(request.LastName);
+        var emailResult = Email.Create(request.Email);
 
-            await _memberRepository.SaveChangesAsync();
-            return Result.Success();
-        }
-        catch (ArgumentException ex)
-        {
-            return Result.Failure(ex.Message);
-        }
+        if (firstNameResult.IsFailure)
+            return Result.Failure(firstNameResult.Error);
+
+        if (lastNameResult.IsFailure)
+            return Result.Failure(lastNameResult.Error);
+
+        if (emailResult.IsFailure)
+            return Result.Failure(emailResult.Error);
+
+        member.UpdateInformation(
+            firstNameResult.Value,
+            lastNameResult.Value,
+            emailResult.Value
+        );
+
+        await _memberRepository.SaveChangesAsync();
+        return Result.Success();
     }
 }

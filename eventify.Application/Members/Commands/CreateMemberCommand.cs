@@ -1,19 +1,16 @@
 using eventify.Application.Common.Interfaces;
-using eventify.Domain.Common;
 using eventify.Domain.Entities;
 using eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Commands;
 
-public class CreateMemberCommand
-{
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-}
-
+public record CreateMemberCommand(
+    string FirstName,
+    string LastName,
+    string Email,
+    string Password);
+    
 public class CreateMemberHandler
 {
     private readonly IMemberRepository _memberRepository;
@@ -28,23 +25,36 @@ public class CreateMemberHandler
         if (await _memberRepository.EmailExistsAsync(request.Email))
             return Result.Failure<Guid>("Email already exists");
 
-        try
-        {
-            var member = Member.Create(
-                new Name(request.FirstName),
-                new Name(request.LastName),
-                new Email(request.Email),
-                new Password(request.Password)
-            );
+        var firstNameResult = Name.Create(request.FirstName);
+        var lastNameResult = Name.Create(request.LastName);
+        var emailResult = Email.Create(request.Email);
+        var passwordResult = Password.Create(request.Password);
 
-            await _memberRepository.AddAsync(member);
-            await _memberRepository.SaveChangesAsync();
+        if (firstNameResult.IsFailure)
+            return Result.Failure<Guid>(firstNameResult.Error);
 
-            return Result.Success(member.Id);
-        }
-        catch (ArgumentException ex)
-        {
-            return Result.Failure<Guid>(ex.Message);
-        }
+        if (lastNameResult.IsFailure)
+            return Result.Failure<Guid>(lastNameResult.Error);
+
+        if (emailResult.IsFailure)
+            return Result.Failure<Guid>(emailResult.Error);
+
+        if (passwordResult.IsFailure)
+            return Result.Failure<Guid>(passwordResult.Error);
+
+        var member = Member.Create(
+            firstNameResult.Value,
+            lastNameResult.Value,
+            emailResult.Value,
+            passwordResult.Value
+        );
+
+        if (member.IsFailure)
+            return Result.Failure<Guid>(member.Error);
+
+        await _memberRepository.AddAsync(member.Value);
+        await _memberRepository.SaveChangesAsync();
+
+        return Result.Success(member.Value.Id);
     }
 }

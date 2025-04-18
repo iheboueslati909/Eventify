@@ -1,13 +1,9 @@
 using eventify.Application.Common.Interfaces;
-using eventify.Domain.Common;
 using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Commands;
 
-public class DeleteMemberCommand
-{
-    public Guid Id { get; set; }
-}
+public record DeleteMemberCommand(Guid Id);
 
 public class DeleteMemberCommandHandler
 {

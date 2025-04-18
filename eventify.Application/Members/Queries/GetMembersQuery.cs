@@ -1,6 +1,5 @@
 using eventify.Application.Common.Interfaces;
 using eventify.Domain.Entities;
-using eventify.Domain.Common;
 using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Queries;
