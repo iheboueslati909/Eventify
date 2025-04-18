@@ -1,4 +1,3 @@
-using eventify.Domain.Common;
 using eventify.SharedKernel;
 
 namespace eventify.Domain.ValueObjects;

@@ -8,6 +8,6 @@ public static class MusicGenreCollectionConverter
     public static readonly ValueConverter<MusicGenreCollection, string> ToStringConverter =
         new(
             v => v.ToString(),
-            v => MusicGenreCollection.FromString(v)
+            v => MusicGenreCollection.FromString(v).Value
         );
 }

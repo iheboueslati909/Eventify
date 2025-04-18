@@ -9,12 +9,12 @@ public class ArtistProfile
     public Guid Id { get; private set; }
     public Guid MemberId { get; private set; }
     public Name ArtistName { get; private set; }
-    public Bio Bio { get; private set; }
+    public Bio? Bio { get; private set; }
     public bool IsDeleted { get; private set; } = false;
-    private MusicGenreCollection _genres = MusicGenreCollection.Empty;
+    private MusicGenreCollection _genres = MusicGenreCollection.Empty.Value;
     public IReadOnlyCollection<MusicGenre> Genres => _genres.Genres;
     public Email Email { get; private set; }
-    public SocialMediaLinks SocialMediaLinks { get; private set; }
+    public SocialMediaLinks? SocialMediaLinks { get; private set; }
 
     private ArtistProfile() { } // Required for EF Core
 
@@ -22,48 +22,48 @@ public class ArtistProfile
         Guid memberId,
         Name artistName,
         Email email,
-        SocialMediaLinks socialMediaLinks,
-        IEnumerable<MusicGenre> genres)
+        Bio bio,
+        IEnumerable<MusicGenre> genres,
+        SocialMediaLinks? socialMediaLinks
+        )
     {
         Id = Guid.NewGuid();
         MemberId = memberId;
         ArtistName = artistName;
         Email = email;
+        Bio = bio;
         SocialMediaLinks = socialMediaLinks;
-        _genres = new MusicGenreCollection(genres);
+        _genres = MusicGenreCollection.Create(genres).Value;
     }
 
     public static Result<ArtistProfile> Create(
         Guid memberId,
         Name artistName,
         Email email,
+        Bio bio,
         SocialMediaLinks socialMediaLinks,
         IEnumerable<MusicGenre> genres)
     {
-        if (memberId == Guid.Empty) return Result.Failure<ArtistProfile>("Member ID cannot be empty");
-        if (artistName == null) return Result.Failure<ArtistProfile>("Artist name cannot be null");
-        if (email == null) return Result.Failure<ArtistProfile>("Email cannot be null");
-        if (socialMediaLinks == null) return Result.Failure<ArtistProfile>("Social media links cannot be null");
-        if (genres == null) return Result.Failure<ArtistProfile>("Genres collection cannot be null");
-
-        return Result.Success(new ArtistProfile(memberId, artistName, email, socialMediaLinks, genres));
+        return Result.Success(new ArtistProfile(memberId, artistName, email, bio ,genres, socialMediaLinks));
     }
 
     public Result UpdateInformation(
         Name artistName,
         Email email,
-        SocialMediaLinks socialMediaLinks,
-        IEnumerable<MusicGenre> genres)
+        Bio bio,
+        IEnumerable<MusicGenre> genres,
+        SocialMediaLinks socialMediaLinks
+        )
     {
-        if (artistName == null) return Result.Failure("Artist name cannot be null");
-        if (email == null) return Result.Failure("Email cannot be null");
-        if (socialMediaLinks == null) return Result.Failure("Social media links cannot be null");
-        if (genres == null) return Result.Failure("Genres collection cannot be null");
+        var genreResult = MusicGenreCollection.Create(genres);
+        if (!genreResult.IsSuccess)
+            return Result.Failure<ArtistProfile>(genreResult.Error);
 
         ArtistName = artistName;
         Email = email;
+        Bio = bio;
         SocialMediaLinks = socialMediaLinks;
-        _genres = new MusicGenreCollection(genres);
+        _genres = genreResult.Value;
         return Result.Success();
     }
     

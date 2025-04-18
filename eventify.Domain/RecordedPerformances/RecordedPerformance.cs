@@ -1,6 +1,7 @@
 ﻿using eventify.Domain.Enums;
 using eventify.Domain.ValueObjects;
 using System;
+using eventify.SharedKernel;
 
 namespace eventify.Domain.Entities;
 

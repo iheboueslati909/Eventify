@@ -1,6 +1,5 @@
 ﻿using eventify.Domain.Enums;
 using eventify.Domain.ValueObjects;
-using eventify.Domain.Common;
 using System;
 using System.Collections.Generic;
 using eventify.SharedKernel;

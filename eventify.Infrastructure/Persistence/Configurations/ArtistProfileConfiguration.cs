@@ -35,33 +35,34 @@ public class ArtistProfileConfiguration : IEntityTypeConfiguration<ArtistProfile
             sm.Property(s => s.SoundCloud)
                 .HasConversion(
                     url => url.Value,
-                    s => new Url(s))
+                    s => Url.FromDatabase(s)) // ✅ Hydrate without validation
                 .HasColumnName("SoundCloud");
 
             sm.Property(s => s.Spotify)
                 .HasConversion(
                     url => url.Value,
-                    s => new Url(s))
+                    s => Url.FromDatabase(s)) // ✅ Clean and consistent
                 .HasColumnName("Spotify");
 
             sm.Property(s => s.Facebook)
                 .HasConversion(
                     url => url.Value,
-                    s => new Url(s))
+                    s => Url.FromDatabase(s))
                 .HasColumnName("Facebook");
 
             sm.Property(s => s.Instagram)
                 .HasConversion(
                     url => url.Value,
-                    s => new Url(s))
+                    s => Url.FromDatabase(s))
                 .HasColumnName("Instagram");
 
             sm.Property(s => s.Youtube)
                 .HasConversion(
                     url => url.Value,
-                    s => new Url(s))
+                    s => Url.FromDatabase(s))
                 .HasColumnName("Youtube");
         });
+
 
         builder.OwnsOne(ap => ap.ArtistName, an =>
         {

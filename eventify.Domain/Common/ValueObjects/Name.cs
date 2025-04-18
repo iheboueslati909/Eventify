@@ -7,12 +7,20 @@ public class Name
 
     private Name() { } // Required for EF Core
 
-    public Name(string value)
+    private Name(string value)
+    {
+        Value = value;
+    }
+
+    public static Result<Name> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Name cannot be empty.");
+            return Result.Failure<Name>("Name cannot be empty.");
 
-        Value = value;
+        if (value.Length > 100)
+            return Result.Failure<Name>("Name must not exceed 100 characters.");
+
+        return Result.Success(new Name(value));
     }
 
     public override string ToString() => Value;

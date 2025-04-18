@@ -15,7 +15,7 @@ public class Concept
     public Description Description { get; private set; }
     public bool IsDeleted { get; private set; } = false;
 
-    private MusicGenreCollection _genres = MusicGenreCollection.Empty;
+    private MusicGenreCollection _genres = MusicGenreCollection.Empty.Value;
     public IReadOnlyCollection<MusicGenre> Genres => _genres.Genres;
     private Concept() { }
 
@@ -53,7 +53,7 @@ public class Concept
 
         Title = title;
         Description = description;
-        _genres = new MusicGenreCollection(genres);
+        _genres = MusicGenreCollection.Create(genres).Value;
         return Result.Success();
     }
 

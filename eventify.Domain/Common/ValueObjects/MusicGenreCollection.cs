@@ -9,15 +9,29 @@ public class MusicGenreCollection
 
     public IReadOnlyCollection<MusicGenre> Genres => _genres.AsReadOnly();
 
-    public MusicGenreCollection(IEnumerable<MusicGenre> genres)
+    private MusicGenreCollection(IEnumerable<MusicGenre> genres)
     {
-        _genres = genres?.Distinct().ToList() ?? throw new ArgumentNullException(nameof(genres));
-        if (!_genres.Any())
-            throw new ArgumentException("At least one music genre must be specified.");
+        _genres = genres.Distinct().ToList();
     }
 
-    public static MusicGenreCollection FromString(string serialized)
+    public static Result<MusicGenreCollection> Create(IEnumerable<MusicGenre> genres)
     {
+        if (genres == null)
+            return Result.Failure<MusicGenreCollection>("Genres collection cannot be null.");
+
+        var genresList = genres.Distinct().ToList();
+        
+        if (!genresList.Any())
+            return Result.Failure<MusicGenreCollection>("At least one music genre must be specified.");
+
+        return Result.Success(new MusicGenreCollection(genresList));
+    }
+
+    public static Result<MusicGenreCollection> FromString(string serialized)
+    {
+        if (string.IsNullOrWhiteSpace(serialized))
+            return Result.Failure<MusicGenreCollection>("Serialized genres string cannot be empty.");
+
         var genres = serialized
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(s => int.TryParse(s.Trim(), out var val) && Enum.IsDefined(typeof(MusicGenre), val)
@@ -26,7 +40,7 @@ public class MusicGenreCollection
             .Where(g => g.HasValue)
             .Select(g => g.Value);
 
-        return new MusicGenreCollection(genres);
+        return Create(genres);
     }
 
     public override string ToString() =>
@@ -34,25 +48,19 @@ public class MusicGenreCollection
 
     public List<MusicGenre> ToList() => _genres.ToList();
 
-    public static MusicGenreCollection Empty => new([]);
+    public static Result<MusicGenreCollection> Empty => Create(new List<MusicGenre>());
 
-    public override bool Equals(object obj)
-    {
-        return obj is MusicGenreCollection other &&
-               _genres.OrderBy(x => x).SequenceEqual(other._genres.OrderBy(x => x));
-    }
+    public Result<MusicGenreCollection> Add(MusicGenre genre) =>
+        Create(_genres.Append(genre));
 
-    public override int GetHashCode()
-    {
-        return _genres
-            .OrderBy(x => x)
+    public Result<MusicGenreCollection> Remove(MusicGenre genre) =>
+        Create(_genres.Where(g => g != genre));
+
+    public override bool Equals(object? obj) =>
+        obj is MusicGenreCollection other &&
+        _genres.OrderBy(x => x).SequenceEqual(other._genres.OrderBy(x => x));
+
+    public override int GetHashCode() =>
+        _genres.OrderBy(x => x)
             .Aggregate(0, (hash, genre) => HashCode.Combine(hash, genre.GetHashCode()));
-    }
-
-    // Optional helper for adding/removing
-    public MusicGenreCollection Add(MusicGenre genre) =>
-        new(_genres.Append(genre));
-
-    public MusicGenreCollection Remove(MusicGenre genre) =>
-        new(_genres.Where(g => g != genre));
 }
