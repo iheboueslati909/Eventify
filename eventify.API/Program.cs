@@ -4,6 +4,7 @@ using eventify.Infrastructure;
 using eventify.Application;
 using Microsoft.OpenApi.Models;
 using eventify.Infrastructure.Persistence.Repositories;
+using eventify.Application.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,8 @@ builder.Services.AddDbContext<EventsDbContext>(options =>
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IConceptRepository, ConceptRepository>();
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+builder.Services.AddScoped<IArtistProfileRepository, ArtistProfileRepository>();
+builder.Services.AddScoped<IMemberFollowRepository, MemberFollowRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

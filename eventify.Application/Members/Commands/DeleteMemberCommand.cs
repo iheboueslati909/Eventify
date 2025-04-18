@@ -1,4 +1,5 @@
 using eventify.Application.Common.Interfaces;
+using eventify.Application.Repositories;
 using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Commands;

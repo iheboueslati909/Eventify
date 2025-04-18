@@ -30,7 +30,7 @@ public class Member
         return Result.Success(new Member(firstName, lastName, email, password));
     }
 
-    public Result<ArtistProfile> CreateArtistProfile(Name artistName, Email email,Bio bio, SocialMediaLinks socialMediaLinks, MusicGenreCollection genres)
+    public Result<ArtistProfile> CreateArtistProfile(Name artistName, Email email, Bio bio, SocialMediaLinks socialMediaLinks, MusicGenreCollection genres)
     {
         if (_artistProfiles.Any(p => p.ArtistName == artistName))
             return Result.Failure<ArtistProfile>("Artist profile with this name already exists.");
@@ -44,11 +44,12 @@ public class Member
             genres.Genres
         );
 
-        if (profileResult.IsFailure)
-            return Result.Failure<ArtistProfile>(profileResult.Error);
-
-        _artistProfiles.Add(profileResult.Value);
-        return Result.Success(profileResult.Value);
+        if (profileResult.IsSuccess)
+        {
+            _artistProfiles.Add(profileResult.Value);
+            return Result.Success(profileResult.Value);
+        }
+        return Result.Failure<ArtistProfile>(profileResult.Error);
     }
 
     public Result UpdateInformation(Name firstName, Name lastName, Email email)

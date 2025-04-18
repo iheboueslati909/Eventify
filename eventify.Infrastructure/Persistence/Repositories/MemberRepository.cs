@@ -1,6 +1,6 @@
-using eventify.Application.Common.Interfaces;
 using eventify.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using eventify.Application.Repositories;
 
 namespace eventify.Infrastructure.Persistence.Repositories;
 
@@ -20,6 +20,17 @@ public class MemberRepository : BaseRepository<Member>, IMemberRepository
             .AsNoTracking()
             .AnyAsync(m => m.Email.Value == email, cancellationToken);
     }
-       
-
+    public async Task<IEnumerable<Member>> GetActiveMembersAsync()
+    {
+        return await _context.Members
+            .Where(m => !m.IsDeleted)
+            .ToListAsync();
+    }
+    public async Task<IEnumerable<Member>> GetMembersWithArtistProfilesAsync()
+    {
+        return await _context.Members
+            .Include(m => m.ArtistProfiles)
+            .Where(m => m.ArtistProfiles.Any())
+            .ToListAsync();
+    }
 }
