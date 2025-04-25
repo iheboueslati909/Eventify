@@ -33,4 +33,16 @@ public class MemberRepository : BaseRepository<Member>, IMemberRepository
             .Where(m => m.ArtistProfiles.Any())
             .ToListAsync();
     }
+    public async Task<IEnumerable<ArtistProfile>> GetArtistProfilesByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default)
+    {
+        return await _context.ArtistProfiles
+            .Where(ap => ap.MemberId == memberId)
+            .ToListAsync(cancellationToken);
+    }
+    public async Task<Member?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Members
+            .AsNoTracking()
+            .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
+    }
 }

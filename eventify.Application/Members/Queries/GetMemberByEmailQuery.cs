@@ -20,7 +20,7 @@ public class GetMemberByEmailQueryHandler
         var member = await _memberRepository.GetByEmailAsync(request.Email, cancellationToken);
         
         if (member == null)
-            return Result.Failure<Member>("Member not found");
+            return Result.Failure<Member>($"Member with email {request.Email} not found.");
 
         return Result.Success(member);
     }
