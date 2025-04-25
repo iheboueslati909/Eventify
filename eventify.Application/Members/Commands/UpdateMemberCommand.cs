@@ -1,5 +1,6 @@
 using eventify.Application.Common.Interfaces;
 using eventify.Application.Repositories;
+using eventify.Application.Members.Queries;
 using eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
 
@@ -23,9 +24,12 @@ public class UpdateMemberCommandHandler
     public async Task<Result> Handle(UpdateMemberCommand request)
     {
         var member = await _memberRepository.GetByIdAsync(request.Id);
-        
         if (member == null)
             return Result.Failure("Member not found");
+
+        var existingMemberWithEmail = await _memberRepository.GetByEmailAsync(request.Email);
+        if (existingMemberWithEmail != null && existingMemberWithEmail.Id != request.Id)
+            return Result.Failure("Email is already in use by another member");
 
         var firstNameResult = Name.Create(request.FirstName);
         var lastNameResult = Name.Create(request.LastName);

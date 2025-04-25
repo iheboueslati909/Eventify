@@ -1,5 +1,6 @@
 using eventify.Application.Common.Interfaces;
 using eventify.Application.Repositories;
+using eventify.Application.Members.Queries;
 using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Commands;
@@ -18,7 +19,6 @@ public class DeleteMemberCommandHandler
     public async Task<Result> Handle(DeleteMemberCommand request)
     {
         var member = await _memberRepository.GetByIdAsync(request.Id);
-        
         if (member == null)
             return Result.Failure("Member not found");
 

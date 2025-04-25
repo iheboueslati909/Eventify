@@ -3,6 +3,7 @@ using eventify.Application.Repositories;
 using eventify.Domain.Entities;
 using eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
+using eventify.Application.Members.Queries;
 
 namespace eventify.Application.Members.Commands;
 
@@ -23,7 +24,8 @@ public class CreateMemberHandler
 
     public async Task<Result<Guid>> Handle(CreateMemberCommand request)
     {
-        if (await _memberRepository.EmailExistsAsync(request.Email))
+        var emailExists = await _memberRepository.EmailExistsAsync(request.Email);
+        if (emailExists)
             return Result.Failure<Guid>("Email already exists");
 
         var firstNameResult = Name.Create(request.FirstName);
