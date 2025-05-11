@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using eventify.Application.Common.Interfaces;
 using eventify.Application.Concepts.Queries;
+using eventify.Application.Concepts.Commands;
+using eventify.Domain.Entities;
+using eventify.SharedKernel;
 
 namespace eventify.API.Controllers;
 
@@ -8,18 +11,23 @@ namespace eventify.API.Controllers;
 [Route("api/concepts")]
 public class ConceptsController : ControllerBase
 {
-    private readonly IConceptRepository _repository;
+    private readonly IQueryDispatcher _queryDispatcher;
+    private readonly ICommandDispatcher _commandDispatcher;
 
-    public ConceptsController(IConceptRepository repository)
+    public ConceptsController(
+        IQueryDispatcher queryDispatcher,
+        ICommandDispatcher commandDispatcher)
     {
-        _repository = repository;
+        _queryDispatcher = queryDispatcher;
+        _commandDispatcher = commandDispatcher;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetActive()
     {
-        var handler = new GetActiveConceptsQueryHandler(_repository);
-        var result = await handler.Handle(new GetActiveConceptsQuery());
+        var result = await _queryDispatcher.Dispatch<GetActiveConceptsQuery, Result<IList<Concept>>>(
+            new GetActiveConceptsQuery(),
+            CancellationToken.None);
 
         if (result.IsFailure)
             return BadRequest(result.Error);

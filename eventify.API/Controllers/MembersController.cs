@@ -1,7 +1,9 @@
 using eventify.Application.Members.Commands;
 using eventify.Application.Members.Queries;
+using eventify.Application.Common;
 using Microsoft.AspNetCore.Mvc;
-using eventify.Application.Repositories;
+using eventify.Domain.Entities;
+using eventify.SharedKernel;
 
 namespace eventify.API.Controllers;
 
@@ -9,45 +11,23 @@ namespace eventify.API.Controllers;
 [Route("api/members")]
 public class MembersController : ControllerBase
 {
-    private readonly IMemberRepository _memberRepository;
-    private readonly GetMembersQueryHandler _getMembersHandler;
-    private readonly GetActiveMembersQueryHandler _getActiveMembersHandler;
-    private readonly GetMemberByIdQueryHandler _getMemberByIdHandler;
-    private readonly GetArtistProfilesByMemberQueryHandler _getArtistProfilesHandler;
-    private readonly GetMemberByEmailQueryHandler _getMemberByEmailHandler;
-    private readonly EmailExistsQueryHandler _emailExistsHandler;
-    private readonly CreateMemberHandler _createMemberHandler;
-    private readonly UpdateMemberCommandHandler _updateMemberHandler;
-    private readonly DeleteMemberCommandHandler _deleteMemberHandler;
+    private readonly IQueryDispatcher _queryDispatcher;
+    private readonly ICommandDispatcher _commandDispatcher;
 
     public MembersController(
-        IMemberRepository memberRepository,
-        GetMembersQueryHandler getMembersHandler,
-        GetActiveMembersQueryHandler getActiveMembersHandler,
-        GetMemberByIdQueryHandler getMemberByIdHandler,
-        GetArtistProfilesByMemberQueryHandler getArtistProfilesHandler,
-        GetMemberByEmailQueryHandler getMemberByEmailHandler,
-        EmailExistsQueryHandler emailExistsHandler,
-        CreateMemberHandler createMemberHandler,
-        UpdateMemberCommandHandler updateMemberHandler,
-        DeleteMemberCommandHandler deleteMemberHandler)
+        IQueryDispatcher queryDispatcher,
+        ICommandDispatcher commandDispatcher)
     {
-        _memberRepository = memberRepository;
-        _getMembersHandler = getMembersHandler;
-        _getActiveMembersHandler = getActiveMembersHandler;
-        _getMemberByIdHandler = getMemberByIdHandler;
-        _getArtistProfilesHandler = getArtistProfilesHandler;
-        _getMemberByEmailHandler = getMemberByEmailHandler;
-        _emailExistsHandler = emailExistsHandler;
-        _createMemberHandler = createMemberHandler;
-        _updateMemberHandler = updateMemberHandler;
-        _deleteMemberHandler = deleteMemberHandler;
+        _queryDispatcher = queryDispatcher;
+        _commandDispatcher = commandDispatcher;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] bool includeDeleted = false)
     {
-        var result = await _getMembersHandler.Handle(new GetMembersQuery { IncludeDeleted = includeDeleted });
+            var result = await _queryDispatcher.Dispatch<GetMembersQuery, Result<IList<Member>>>(
+        new GetMembersQuery(includeDeleted),
+        CancellationToken.None);
 
         if (result.IsFailure)
             return BadRequest(result.Error);
@@ -58,7 +38,9 @@ public class MembersController : ControllerBase
     [HttpGet("active")]
     public async Task<IActionResult> GetActive()
     {
-        var result = await _getActiveMembersHandler.Handle(new GetActiveMembersQuery());
+        var result = await _queryDispatcher.Dispatch<GetActiveMembersQuery, Result<IList<Member>>>(
+            new GetActiveMembersQuery(),
+            CancellationToken.None);
 
         if (result.IsFailure)
             return BadRequest(result.Error);
@@ -69,7 +51,9 @@ public class MembersController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var result = await _getMemberByIdHandler.Handle(new GetMemberByIdQuery(id), default);
+        var result = await _queryDispatcher.Dispatch<GetMemberByIdQuery, Result<Member>>(
+            new GetMemberByIdQuery(id),
+            CancellationToken.None);
 
         if (result.IsFailure)
             return NotFound(result.Error);
@@ -80,7 +64,9 @@ public class MembersController : ControllerBase
     [HttpGet("{id}/artist-profiles")]
     public async Task<IActionResult> GetArtistProfiles(Guid id)
     {
-        var result = await _getArtistProfilesHandler.Handle(new GetArtistProfilesByMemberQuery(id), default);
+        var result = await _queryDispatcher.Dispatch<GetArtistProfilesByMemberQuery, Result<IList<ArtistProfile>>>(
+            new GetArtistProfilesByMemberQuery(id),
+            CancellationToken.None);
 
         if (result.IsFailure)
             return NotFound(result.Error);
@@ -91,7 +77,9 @@ public class MembersController : ControllerBase
     [HttpGet("email/{email}")]
     public async Task<IActionResult> GetByEmail(string email)
     {
-        var result = await _getMemberByEmailHandler.Handle(new GetMemberByEmailQuery(email), default);
+        var result = await _queryDispatcher.Dispatch<GetMemberByEmailQuery, Result<Member>>(
+            new GetMemberByEmailQuery(email),
+            CancellationToken.None);
 
         if (result.IsFailure)
             return NotFound(result.Error);
@@ -102,7 +90,9 @@ public class MembersController : ControllerBase
     [HttpGet("email/exists/{email}")]
     public async Task<IActionResult> EmailExists(string email)
     {
-        var result = await _emailExistsHandler.Handle(new EmailExistsQuery(email), default);
+        var result = await _queryDispatcher.Dispatch<EmailExistsQuery, Result<bool>>(
+            new EmailExistsQuery(email),
+            CancellationToken.None);
 
         if (result.IsFailure)
             return BadRequest(result.Error);
@@ -113,7 +103,9 @@ public class MembersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateMemberCommand command)
     {
-        var result = await _createMemberHandler.Handle(command);
+        var result = await _commandDispatcher.Dispatch<CreateMemberCommand, Result<Guid>>(
+            command,
+            CancellationToken.None);
 
         if (result.IsFailure)
             return BadRequest(result.Error);
@@ -124,7 +116,7 @@ public class MembersController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateMemberCommand command)
     {
-        var result = await _updateMemberHandler.Handle(command with { Id = id });
+        var result = await _commandDispatcher.Dispatch<UpdateMemberCommand, Result>(command with { Id = id });
 
         if (result.IsFailure)
             return BadRequest(result.Error);
@@ -135,7 +127,7 @@ public class MembersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var result = await _deleteMemberHandler.Handle(new DeleteMemberCommand(id));
+        var result = await _commandDispatcher.Dispatch<DeleteMemberCommand,Result>(new DeleteMemberCommand(id));
 
         if (result.IsFailure)
             return BadRequest(result.Error);

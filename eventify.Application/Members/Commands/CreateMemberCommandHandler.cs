@@ -1,9 +1,8 @@
-using eventify.Application.Common.Interfaces;
+using eventify.Application.Common;
 using eventify.Application.Repositories;
 using eventify.Domain.Entities;
 using eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
-using eventify.Application.Members.Queries;
 
 namespace eventify.Application.Members.Commands;
 
@@ -11,9 +10,9 @@ public record CreateMemberCommand(
     string FirstName,
     string LastName,
     string Email,
-    string Password);
+    string Password) : ICommand<Result<Guid>>;
     
-public class CreateMemberHandler
+public class CreateMemberHandler : ICommandHandler<CreateMemberCommand, Result<Guid>>
 {
     private readonly IMemberRepository _memberRepository;
 
@@ -22,7 +21,7 @@ public class CreateMemberHandler
         _memberRepository = memberRepository;
     }
 
-    public async Task<Result<Guid>> Handle(CreateMemberCommand request)
+    public async Task<Result<Guid>> Handle(CreateMemberCommand request, CancellationToken cancellationToken)
     {
         var emailExists = await _memberRepository.EmailExistsAsync(request.Email);
         if (emailExists)

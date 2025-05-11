@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using eventify.Application.Common.Interfaces;
 using eventify.Application.Events.Queries;
+using eventify.SharedKernel;
+using eventify.Domain.Entities;
 
 namespace eventify.API.Controllers;
 
@@ -8,18 +10,23 @@ namespace eventify.API.Controllers;
 [Route("api/events")]
 public class EventsController : ControllerBase
 {
-    private readonly IEventRepository _repository;
+    private readonly IQueryDispatcher _queryDispatcher;
+    private readonly ICommandDispatcher _commandDispatcher;
 
-    public EventsController(IEventRepository repository)
+    public EventsController(
+        IQueryDispatcher queryDispatcher,
+        ICommandDispatcher commandDispatcher)
     {
-        _repository = repository;
+        _queryDispatcher = queryDispatcher;
+        _commandDispatcher = commandDispatcher;
     }
 
     [HttpGet("published")]
-    public async Task<IActionResult> GetPublished()
+    public async Task<IActionResult> GetPublished([FromQuery] bool includeDeleted = false)
     {
-        var handler = new GetPublishedEventsQueryHandler(_repository);
-        var result = await handler.Handle(new GetPublishedEventsQuery());
+        var result = await _queryDispatcher.Dispatch<GetPublishedEventsQuery, Result<IList<Event>>>(
+            new GetPublishedEventsQuery(includeDeleted),
+            CancellationToken.None);
 
         if (result.IsFailure)
             return BadRequest(result.Error);

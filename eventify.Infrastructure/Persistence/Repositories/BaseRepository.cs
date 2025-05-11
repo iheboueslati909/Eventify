@@ -18,12 +18,17 @@ public class BaseRepository<T> : IRepository<T> where T : class
         return await _context.Set<T>().FindAsync(id);
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync()
+    public async Task<IList<T>> GetAllAsync(bool includeDeleted = false)
     {
-        return await _context.Set<T>().ToListAsync();
+        if (includeDeleted)
+        {
+            return await _context.Set<T>().ToListAsync();
+        }
+
+        return await _context.Set<T>().Where(e => EF.Property<bool>(e, "IsDeleted") == false).ToListAsync();
     }
 
-    public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+    public async Task<IList<T>> FindAsync(Expression<Func<T, bool>> predicate)
     {
         return await _context.Set<T>().Where(predicate).ToListAsync();
     }

@@ -1,3 +1,4 @@
+using eventify.Application.Common;
 using eventify.Application.Common.Interfaces;
 using eventify.Application.Repositories;
 using eventify.Domain.Entities;
@@ -5,9 +6,9 @@ using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Queries;
 
-public record GetMemberByIdQuery(Guid Id);
+public record GetMemberByIdQuery(Guid Id) : IQuery<Result<Member>>;
 
-public class GetMemberByIdQueryHandler
+public class GetMemberByIdQueryHandler : IQueryHandler<GetMemberByIdQuery, Result<Member>>
 {
     private readonly IMemberRepository _memberRepository;
 

@@ -1,12 +1,13 @@
+using eventify.Application.Common;
 using eventify.Application.Repositories;
 using eventify.Domain.Entities;
 using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Queries;
 
-public record GetMemberByEmailQuery(string Email);
+public record GetMemberByEmailQuery(string Email) : IQuery<Result<Member>>;
 
-public class GetMemberByEmailQueryHandler
+public class GetMemberByEmailQueryHandler : IQueryHandler<GetMemberByEmailQuery, Result<Member>>
 {
     private readonly IMemberRepository _memberRepository;
 

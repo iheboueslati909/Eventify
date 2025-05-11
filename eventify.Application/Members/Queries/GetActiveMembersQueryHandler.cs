@@ -1,12 +1,13 @@
+using eventify.Application.Common;
 using eventify.Application.Repositories;
 using eventify.Domain.Entities;
 using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Queries;
 
-public record GetActiveMembersQuery();
+public record GetActiveMembersQuery(): IQuery<Result<IList<Member>>>;
 
-public class GetActiveMembersQueryHandler
+public class GetActiveMembersQueryHandler  : IQueryHandler<GetActiveMembersQuery, Result<IList<Member>>>
 {
     private readonly IMemberRepository _memberRepository;
 
@@ -15,7 +16,7 @@ public class GetActiveMembersQueryHandler
         _memberRepository = memberRepository;
     }
 
-    public async Task<Result<IEnumerable<Member>>> Handle(GetActiveMembersQuery request)
+    public async Task<Result<IList<Member>>> Handle(GetActiveMembersQuery request, CancellationToken cancellationToken)
     {
         var members = await _memberRepository.GetActiveMembersAsync();
         return Result.Success(members);

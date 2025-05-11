@@ -1,13 +1,14 @@
 //Email exists Query
+using eventify.Application.Common;
 using eventify.Application.Repositories;
 using eventify.Domain.Entities;
 using eventify.SharedKernel;
 
 namespace eventify.Application.Members.Queries;
 
-public record EmailExistsQuery(string Email);
+public record EmailExistsQuery(string Email) : IQuery<Result<bool>>;
 
-public class EmailExistsQueryHandler
+public class EmailExistsQueryHandler : IQueryHandler<EmailExistsQuery, Result<bool>>
 {
     private readonly IMemberRepository _memberRepository;
 

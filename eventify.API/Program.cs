@@ -1,11 +1,10 @@
 using eventify.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using eventify.Infrastructure;
 using eventify.Application;
 using Microsoft.OpenApi.Models;
 using eventify.Infrastructure.Persistence.Repositories;
 using eventify.Application.Repositories;
-using eventify.Application;
+using eventify.Application.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +25,9 @@ builder.Services.Scan(scan => scan
             type.Name.EndsWith("CommandHandler")))
     .AsImplementedInterfaces()
     .WithScopedLifetime());
+
+builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
+builder.Services.AddScoped<IQueryDispatcher, QueryDispatcher>();
     
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

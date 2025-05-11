@@ -1,6 +1,5 @@
-using eventify.Application.Common.Interfaces;
+using eventify.Application.Common;
 using eventify.Application.Repositories;
-using eventify.Application.Members.Queries;
 using eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
 
@@ -21,7 +20,7 @@ public class UpdateMemberCommandHandler
         _memberRepository = memberRepository;
     }
 
-    public async Task<Result> Handle(UpdateMemberCommand request)
+    public async Task<Result> Handle(UpdateMemberCommand request, CancellationToken cancellationToken)
     {
         var member = await _memberRepository.GetByIdAsync(request.Id);
         if (member == null)

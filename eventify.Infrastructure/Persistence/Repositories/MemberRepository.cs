@@ -20,20 +20,20 @@ public class MemberRepository : BaseRepository<Member>, IMemberRepository
             .AsNoTracking()
             .AnyAsync(m => m.Email.Value == email, cancellationToken);
     }
-    public async Task<IEnumerable<Member>> GetActiveMembersAsync()
+    public async Task<IList<Member>> GetActiveMembersAsync()
     {
         return await _context.Members
             .Where(m => !m.IsDeleted)
             .ToListAsync();
     }
-    public async Task<IEnumerable<Member>> GetMembersWithArtistProfilesAsync()
+    public async Task<IList<Member>> GetMembersWithArtistProfilesAsync()
     {
         return await _context.Members
             .Include(m => m.ArtistProfiles)
             .Where(m => m.ArtistProfiles.Any())
             .ToListAsync();
     }
-    public async Task<IEnumerable<ArtistProfile>> GetArtistProfilesByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default)
+    public async Task<IList<ArtistProfile>> GetArtistProfilesByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
         return await _context.ArtistProfiles
             .Where(ap => ap.MemberId == memberId)
