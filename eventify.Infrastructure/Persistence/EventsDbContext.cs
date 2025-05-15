@@ -6,7 +6,6 @@ namespace eventify.Infrastructure.Persistence;
 public class EventsDbContext : DbContext
 {
     public EventsDbContext(DbContextOptions<EventsDbContext> options) : base(options) { }
-    public EventsDbContext() { }
 
     public DbSet<Event> Events { get; set; }
     public DbSet<TimeTable> TimeTables { get; set; }

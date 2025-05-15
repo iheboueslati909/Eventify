@@ -9,7 +9,10 @@ using eventify.Application.Common;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<EventsDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(
+    builder.Configuration.GetConnectionString("Postgres"),
+    npgsqlOptions => npgsqlOptions.EnableRetryOnFailure())
+);
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IConceptRepository, ConceptRepository>();

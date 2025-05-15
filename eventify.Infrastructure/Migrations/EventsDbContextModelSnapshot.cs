@@ -2,8 +2,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using eventify.Infrastructure.Persistence;
 
 #nullable disable
@@ -17,34 +17,34 @@ namespace eventify.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Eventify.Domain.Members.MemberFollow", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsMuted")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("MemberId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("NotificationType")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("TargetId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("TargetType")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -58,13 +58,13 @@ namespace eventify.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("MemberId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("_genres")
                         .IsRequired()
@@ -82,13 +82,13 @@ namespace eventify.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("MemberId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("_genres")
                         .IsRequired()
@@ -106,29 +106,29 @@ namespace eventify.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("ConceptId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("EndDate");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("StartDate");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -145,10 +145,10 @@ namespace eventify.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
@@ -159,17 +159,17 @@ namespace eventify.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("LastModified")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -180,10 +180,10 @@ namespace eventify.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("EventId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -196,16 +196,16 @@ namespace eventify.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("time");
+                        .HasColumnType("interval");
 
                     b.Property<TimeSpan>("StartTime")
-                        .HasColumnType("time");
+                        .HasColumnType("interval");
 
                     b.Property<Guid>("TimeTableId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -225,11 +225,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Name", "ArtistName", b1 =>
                         {
                             b1.Property<Guid>("ArtistProfileId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("ArtistName");
 
                             b1.HasKey("ArtistProfileId");
@@ -243,11 +243,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Email", "Email", b1 =>
                         {
                             b1.Property<Guid>("ArtistProfileId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Email");
 
                             b1.HasKey("ArtistProfileId");
@@ -261,11 +261,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Bio", "Bio", b1 =>
                         {
                             b1.Property<Guid>("ArtistProfileId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Bio");
 
                             b1.HasKey("ArtistProfileId");
@@ -279,26 +279,26 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.SocialMediaLinks", "SocialMediaLinks", b1 =>
                         {
                             b1.Property<Guid>("ArtistProfileId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Facebook")
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Facebook");
 
                             b1.Property<string>("Instagram")
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Instagram");
 
                             b1.Property<string>("SoundCloud")
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("SoundCloud");
 
                             b1.Property<string>("Spotify")
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Spotify");
 
                             b1.Property<string>("Youtube")
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Youtube");
 
                             b1.HasKey("ArtistProfileId");
@@ -331,11 +331,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Description", "Description", b1 =>
                         {
                             b1.Property<Guid>("ConceptId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Description");
 
                             b1.HasKey("ConceptId");
@@ -349,11 +349,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Title", "Title", b1 =>
                         {
                             b1.Property<Guid>("ConceptId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Title");
 
                             b1.HasKey("ConceptId");
@@ -382,11 +382,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Description", "Description", b1 =>
                         {
                             b1.Property<Guid>("EventId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Description");
 
                             b1.HasKey("EventId");
@@ -400,11 +400,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Title", "Title", b1 =>
                         {
                             b1.Property<Guid>("EventId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Title");
 
                             b1.HasKey("EventId");
@@ -418,11 +418,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Location", "Location", b1 =>
                         {
                             b1.Property<Guid>("EventId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Address")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Location");
 
                             b1.HasKey("EventId");
@@ -448,11 +448,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Email", "Email", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Email");
 
                             b1.HasKey("MemberId");
@@ -466,11 +466,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Name", "FirstName", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("FirstName");
 
                             b1.HasKey("MemberId");
@@ -484,11 +484,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Name", "LastName", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("LastName");
 
                             b1.HasKey("MemberId");
@@ -502,11 +502,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Password", "Password", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Hash")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Password");
 
                             b1.HasKey("MemberId");
@@ -535,11 +535,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Url", "MediaUrl", b1 =>
                         {
                             b1.Property<Guid>("RecordedPerformanceId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("MediaUrl");
 
                             b1.HasKey("RecordedPerformanceId");
@@ -565,11 +565,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Title", "StageName", b1 =>
                         {
                             b1.Property<Guid>("TimeTableId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("StageName");
 
                             b1.HasKey("TimeTableId");
@@ -595,11 +595,11 @@ namespace eventify.Infrastructure.Migrations
                     b.OwnsOne("eventify.Domain.ValueObjects.Title", "Title", b1 =>
                         {
                             b1.Property<Guid>("TimeTableSlotId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)")
+                                .HasColumnType("text")
                                 .HasColumnName("Title");
 
                             b1.HasKey("TimeTableSlotId");
