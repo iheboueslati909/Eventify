@@ -33,6 +33,9 @@ jobs:
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # Required for OIDC
+      contents: read    # Optional (needed for checking out code)
     needs: build
     steps:
     - name: Download artifact from build job
