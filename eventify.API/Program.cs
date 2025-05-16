@@ -7,10 +7,12 @@ using eventify.Application.Repositories;
 using eventify.Application.Common;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine($"Postgres: {connectionString}");
 
 builder.Services.AddDbContext<EventsDbContext>(options =>
     options.UseNpgsql(
-    builder.Configuration.GetConnectionString("Postgres"),
+    builder.Configuration.GetConnectionString("DefaultConnection"),
     npgsqlOptions => npgsqlOptions.EnableRetryOnFailure())
 );
 
