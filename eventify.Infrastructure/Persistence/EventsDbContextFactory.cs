@@ -13,7 +13,7 @@ namespace eventify.Infrastructure.Persistence
 
             var config = new ConfigurationBuilder()
                 .SetBasePath(basePath)
-                .AddJsonFile("appsettings.Development.json", optional: false)
+                .AddJsonFile("appsettings.json", optional: false)
                 .Build();
 
             var optionsBuilder = new DbContextOptionsBuilder<EventsDbContext>();
