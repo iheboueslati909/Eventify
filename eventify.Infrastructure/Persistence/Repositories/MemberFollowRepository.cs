@@ -1,6 +1,7 @@
 using Eventify.Domain.Members;
 using eventify.Application.Repositories;
 using Microsoft.EntityFrameworkCore;
+using eventify.Infrastructure.Extensions;
 
 namespace eventify.Infrastructure.Persistence.Repositories;
 

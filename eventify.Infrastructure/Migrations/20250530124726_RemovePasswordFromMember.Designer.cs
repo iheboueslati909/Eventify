@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using eventify.Infrastructure.Persistence;
 using eventify.Infrastructure.Extensions;
 
 #nullable disable
@@ -13,8 +12,8 @@ using eventify.Infrastructure.Extensions;
 namespace eventify.Infrastructure.Migrations
 {
     [DbContext(typeof(EventsDbContext))]
-    [Migration("20250515172559_SwitchingToPostgres")]
-    partial class SwitchingToPostgres
+    [Migration("20250530124726_RemovePasswordFromMember")]
+    partial class RemovePasswordFromMember
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -503,24 +502,6 @@ namespace eventify.Infrastructure.Migrations
                                 .HasForeignKey("MemberId");
                         });
 
-                    b.OwnsOne("eventify.Domain.ValueObjects.Password", "Password", b1 =>
-                        {
-                            b1.Property<Guid>("MemberId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Hash")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Password");
-
-                            b1.HasKey("MemberId");
-
-                            b1.ToTable("Members");
-
-                            b1.WithOwner()
-                                .HasForeignKey("MemberId");
-                        });
-
                     b.Navigation("Email")
                         .IsRequired();
 
@@ -528,9 +509,6 @@ namespace eventify.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("LastName")
-                        .IsRequired();
-
-                    b.Navigation("Password")
                         .IsRequired();
                 });
 
