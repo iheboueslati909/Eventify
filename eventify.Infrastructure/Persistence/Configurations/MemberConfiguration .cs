@@ -16,13 +16,6 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
                 .IsRequired();
         });
 
-        builder.OwnsOne(m => m.Password, p =>
-        {
-            p.Property(pp => pp.Hash)
-                .HasColumnName("Password")
-                .IsRequired();
-        });
-
         builder.OwnsOne(m => m.FirstName, fn =>
         {
             fn.Property(f => f.Value)

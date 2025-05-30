@@ -1,13 +1,14 @@
-using eventify.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.IO;
 
 namespace eventify.Infrastructure.Persistence
 {
-    public class EventsDbContextFactory : IDesignTimeDbContextFactory<EventsDbContext>
+    public class AppIdentityDbContextFactory : IDesignTimeDbContextFactory<AppIdentityDbContext>
     {
-        public EventsDbContext CreateDbContext(string[] args)
+        public AppIdentityDbContext CreateDbContext(string[] args)
         {
             var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../eventify.API");
 
@@ -16,10 +17,10 @@ namespace eventify.Infrastructure.Persistence
                 .AddJsonFile("appsettings.json", optional: false)
                 .Build();
 
-            var optionsBuilder = new DbContextOptionsBuilder<EventsDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<AppIdentityDbContext>();
             optionsBuilder.UseNpgsql(config.GetConnectionString("DefaultConnection"));
 
-            return new EventsDbContext(optionsBuilder.Options);
+            return new AppIdentityDbContext(optionsBuilder.Options);
         }
     }
 }

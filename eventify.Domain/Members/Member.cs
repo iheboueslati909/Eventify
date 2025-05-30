@@ -10,24 +10,25 @@ public class Member
     public Name FirstName { get; private set; }
     public Name LastName { get; private set; }
     public Email Email { get; private set; }
-    public Password Password { get; private set; }
 
     public bool IsDeleted { get; private set; } = false;
+
     private readonly List<ArtistProfile> _artistProfiles = new();
     public IReadOnlyCollection<ArtistProfile> ArtistProfiles => _artistProfiles.AsReadOnly();
+
     private Member() { }
 
-    private Member(Name firstName, Name lastName, Email email, Password password)
+    private Member(Name firstName, Name lastName, Email email)
     {
         Id = Guid.NewGuid();
         FirstName = firstName;
         LastName = lastName;
         Email = email;
-        Password = password;
     }
-    public static Result<Member> Create(Name firstName, Name lastName, Email email, Password password)
+
+    public static Result<Member> Create(Name firstName, Name lastName, Email email)
     {
-        return Result.Success(new Member(firstName, lastName, email, password));
+        return Result.Success(new Member(firstName, lastName, email));
     }
 
     public Result<ArtistProfile> CreateArtistProfile(Name artistName, Email email, Bio bio, SocialMediaLinks socialMediaLinks, MusicGenreCollection genres)
@@ -49,6 +50,7 @@ public class Member
             _artistProfiles.Add(profileResult.Value);
             return Result.Success(profileResult.Value);
         }
+
         return Result.Failure<ArtistProfile>(profileResult.Error);
     }
 
@@ -59,7 +61,7 @@ public class Member
         Email = email;
         return Result.Success();
     }
-    
+
     public Result SoftDelete()
     {
         if (_artistProfiles.Any(p => !p.IsDeleted))
@@ -68,5 +70,4 @@ public class Member
         IsDeleted = true;
         return Result.Success();
     }
-
 }
