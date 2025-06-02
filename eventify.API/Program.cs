@@ -16,16 +16,9 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<EventsDbContext>(options =>
-    options.UseNpgsql(
-    builder.Configuration.GetConnectionString("DefaultConnection"),
-    npgsqlOptions => npgsqlOptions.EnableRetryOnFailure())
-);
+    options.UseNpgsql(connectionString, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()));
 builder.Services.AddDbContext<AppIdentityDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure())
-);
-
+    options.UseNpgsql(connectionString, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()));
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IConceptRepository, ConceptRepository>();
@@ -44,14 +37,8 @@ builder.Services.Scan(scan => scan
 
 builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
 builder.Services.AddScoped<IQueryDispatcher, QueryDispatcher>();
-    
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(opt =>
-{
-    opt.SwaggerDoc("v0", new OpenApiInfo { Title = "Eventify API", Version = "v0" });
-});
 
+// Identity and Auth
 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<AppIdentityDbContext>()
     .AddDefaultTokenProviders();
@@ -78,8 +65,39 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 
-// Place authentication middleware before authorization
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(opt =>
+{
+    opt.SwaggerDoc("v0", new OpenApiInfo { Title = "Eventify API", Version = "v0" });
+});
+
 var app = builder.Build();
+
+if (args.Contains("--migrate"))
+{
+    using var scope = app.Services.CreateScope();
+
+    try
+    {
+        Console.WriteLine("⏳ Applying EventsDbContext migrations...");
+        var eventsDb = scope.ServiceProvider.GetRequiredService<EventsDbContext>();
+        eventsDb.Database.Migrate();
+        Console.WriteLine("✅ EventsDbContext migrations applied.");
+
+        Console.WriteLine("⏳ Applying AppIdentityDbContext migrations...");
+        var identityDb = scope.ServiceProvider.GetRequiredService<AppIdentityDbContext>();
+        identityDb.Database.Migrate();
+        Console.WriteLine("✅ AppIdentityDbContext migrations applied.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("❌ Migration failed: " + ex);
+        throw;
+    }
+
+    return; // Exit cleanly after migrations
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -91,8 +109,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseAuthentication();  // <-- Must be before UseAuthorization
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();     // <-- Required for controllers to work
-app.Run();               // <-- This keeps the app running
+app.MapControllers();
+app.Run();
