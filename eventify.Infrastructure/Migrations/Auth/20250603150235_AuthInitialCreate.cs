@@ -4,10 +4,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace eventify.Infrastructure.Persistence.Migrations.Identity
+namespace eventify.Infrastructure.Migrations.Auth
 {
     /// <inheritdoc />
-    public partial class AddIdentitySchema : Migration
+    public partial class AuthInitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
