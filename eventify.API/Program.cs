@@ -96,17 +96,26 @@ if (args.Contains("--migrate"))
         throw;
     }
 
-    return; // Exit cleanly after migrations
+    return;
+}
+
+if (args.Contains("--seedIdentity"))
+{
+    using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await IdentitySeeder.SeedRolesAndAdminUserAsync(services);
+}
 }
 
 if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/swagger/v0/swagger.json", "eventify.API v0");
-    });
-}
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v0/swagger.json", "eventify.API v0");
+        });
+    }
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
