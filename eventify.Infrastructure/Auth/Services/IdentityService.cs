@@ -108,7 +108,6 @@ public class IdentityService : IIdentityService
             new Claim("appId", appId),
         };
 
-        var tedst = roles.Select(role => new Claim("role", role));
         claims.AddRange(roles.Select(role => new Claim("role", role)));
 
 
