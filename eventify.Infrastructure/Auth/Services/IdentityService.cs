@@ -97,6 +97,10 @@ public class IdentityService : IIdentityService
             throw new InvalidOperationException("AppSettings:AppId not configured");
 
         var roles = await _userManager.GetRolesAsync(user);
+        if (roles == null || !roles.Any())
+        {
+            throw new InvalidOperationException("User has no roles assigned.");
+        }
 
         var claims = new List<Claim>
         {
@@ -105,10 +109,10 @@ public class IdentityService : IIdentityService
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
             new Claim("MemberId", user.MemberId.ToString()),
-            new Claim("appId", appId),
+            new Claim("appId", appId)
         };
 
-        claims.AddRange(roles.Select(role => new Claim("role", role)));
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
 
         var securityToken = new JwtSecurityToken(
