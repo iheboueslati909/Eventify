@@ -364,3 +364,6 @@ FodyWeavers.xsd
 .qodo
 
 .idea
+
+eventify.API/appsettings.json
+.gitignore
