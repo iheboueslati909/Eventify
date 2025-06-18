@@ -5,22 +5,22 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using eventify.Infrastructure.Persistence;
+using eventify.Infrastructure.Extensions;
 
 #nullable disable
 
-namespace eventify.Infrastructure.Migrations
+namespace eventify.Infrastructure.Migrations.Events
 {
     [DbContext(typeof(EventsDbContext))]
-    [Migration("20250515172559_SwitchingToPostgres")]
-    partial class SwitchingToPostgres
+    [Migration("20250603150658_EventsInitialCreate")]
+    partial class EventsInitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -502,24 +502,6 @@ namespace eventify.Infrastructure.Migrations
                                 .HasForeignKey("MemberId");
                         });
 
-                    b.OwnsOne("eventify.Domain.ValueObjects.Password", "Password", b1 =>
-                        {
-                            b1.Property<Guid>("MemberId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Hash")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Password");
-
-                            b1.HasKey("MemberId");
-
-                            b1.ToTable("Members");
-
-                            b1.WithOwner()
-                                .HasForeignKey("MemberId");
-                        });
-
                     b.Navigation("Email")
                         .IsRequired();
 
@@ -527,9 +509,6 @@ namespace eventify.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("LastName")
-                        .IsRequired();
-
-                    b.Navigation("Password")
                         .IsRequired();
                 });
 

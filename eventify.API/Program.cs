@@ -5,16 +5,20 @@ using Microsoft.OpenApi.Models;
 using eventify.Infrastructure.Persistence.Repositories;
 using eventify.Application.Repositories;
 using eventify.Application.Common;
+using eventify.Infrastructure.Extensions;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using eventify.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-Console.WriteLine($"Postgres: {connectionString}");
 
 builder.Services.AddDbContext<EventsDbContext>(options =>
-    options.UseNpgsql(
-    builder.Configuration.GetConnectionString("DefaultConnection"),
-    npgsqlOptions => npgsqlOptions.EnableRetryOnFailure())
-);
+    options.UseNpgsql(connectionString, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()));
+builder.Services.AddDbContext<AppIdentityDbContext>(options =>
+    options.UseNpgsql(connectionString, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()));
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IConceptRepository, ConceptRepository>();
@@ -33,7 +37,34 @@ builder.Services.Scan(scan => scan
 
 builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
 builder.Services.AddScoped<IQueryDispatcher, QueryDispatcher>();
-    
+
+// Identity and Auth
+builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
+    .AddEntityFrameworkStores<AppIdentityDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ClockSkew = TimeSpan.Zero,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+    };
+});
+
+builder.Services.AddScoped<IIdentityService, IdentityService>();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opt =>
@@ -43,17 +74,52 @@ builder.Services.AddSwaggerGen(opt =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (args.Contains("--migrate"))
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
+    using var scope = app.Services.CreateScope();
+
+    try
     {
-        options.SwaggerEndpoint("/swagger/v0/swagger.json", "eventify.API v0");
-    });
+        Console.WriteLine("⏳ Applying EventsDbContext migrations...");
+        var eventsDb = scope.ServiceProvider.GetRequiredService<EventsDbContext>();
+        eventsDb.Database.Migrate();
+        Console.WriteLine("✅ EventsDbContext migrations applied.");
+
+        Console.WriteLine("⏳ Applying AppIdentityDbContext migrations...");
+        var identityDb = scope.ServiceProvider.GetRequiredService<AppIdentityDbContext>();
+        identityDb.Database.Migrate();
+        Console.WriteLine("✅ AppIdentityDbContext migrations applied.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("❌ Migration failed: " + ex);
+        throw;
+    }
+
+    return;
 }
 
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
+if (args.Contains("--seedIdentity"))
+{
+    using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await IdentitySeeder.SeedRolesAndAdminUserAsync(services);
+}
+}
 
+if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v0/swagger.json", "eventify.API v0");
+        });
+    }
+
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
 app.Run();

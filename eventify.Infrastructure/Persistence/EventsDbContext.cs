@@ -1,7 +1,7 @@
 ﻿using eventify.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace eventify.Infrastructure.Persistence;
+namespace eventify.Infrastructure.Extensions;
 
 public class EventsDbContext : DbContext
 {

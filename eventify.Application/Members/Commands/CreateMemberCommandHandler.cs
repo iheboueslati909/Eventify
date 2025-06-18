@@ -30,7 +30,6 @@ public class CreateMemberHandler : ICommandHandler<CreateMemberCommand, Result<G
         var firstNameResult = Name.Create(request.FirstName);
         var lastNameResult = Name.Create(request.LastName);
         var emailResult = Email.Create(request.Email);
-        var passwordResult = Password.Create(request.Password);
 
         if (firstNameResult.IsFailure)
             return Result.Failure<Guid>(firstNameResult.Error);
@@ -41,14 +40,10 @@ public class CreateMemberHandler : ICommandHandler<CreateMemberCommand, Result<G
         if (emailResult.IsFailure)
             return Result.Failure<Guid>(emailResult.Error);
 
-        if (passwordResult.IsFailure)
-            return Result.Failure<Guid>(passwordResult.Error);
-
         var member = Member.Create(
             firstNameResult.Value,
             lastNameResult.Value,
-            emailResult.Value,
-            passwordResult.Value
+            emailResult.Value
         );
 
         if (member.IsFailure)
