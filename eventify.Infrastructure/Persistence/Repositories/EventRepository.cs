@@ -13,4 +13,10 @@ public class EventRepository : BaseRepository<Event>, IEventRepository
     {
         return await _context.Set<Event>().Where(e => e.IsPublished && !e.IsDeleted).ToListAsync();
     }
+
+    public void AttachEntity<TEntity>(TEntity entity) where TEntity : class
+    {
+        if (_context.Entry(entity).State == EntityState.Detached)
+            _context.Attach(entity);
+    }
 }

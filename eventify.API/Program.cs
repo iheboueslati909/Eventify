@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using eventify.Infrastructure.Identity;
+using eventify.Application.Common.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -24,6 +25,9 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IConceptRepository, ConceptRepository>();
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<IMemberFollowRepository, MemberFollowRepository>();
+builder.Services.AddScoped<ITimeTableSlotRepository, TimeTableSlotRepository>();
+builder.Services.AddScoped<IArtistProfileRepository, ArtistProfileRepository>();
+
 
 builder.Services.Scan(scan => scan
     .FromAssemblyOf<IApplicationMarker>()

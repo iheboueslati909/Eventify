@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using eventify.SharedKernel;
 
 namespace eventify.Domain.ValueObjects;
@@ -6,9 +7,10 @@ public class Bio
 {
     public string Value { get; }
 
-    private Bio() { } // Required for EF Core
+    public Bio() { } // For deserialization
 
-    private Bio(string value)
+    [JsonConstructor]
+    public Bio(string value)
     {
         Value = value;
     }

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 namespace eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
 
@@ -5,9 +6,10 @@ public class Password
 {
     public string Hash { get; }
 
-    private Password() { } // Required for EF Core
+    public Password() { } // For deserialization
 
-    private Password(string hash)
+    [JsonConstructor]
+    public Password(string hash)
     {
         Hash = hash;
     }

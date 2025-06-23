@@ -71,7 +71,6 @@ public class ArtistProfileConfiguration : IEntityTypeConfiguration<ArtistProfile
                 .IsRequired();
         });
 
-        // One-to-one with Member
         builder.HasOne<Member>()
             .WithMany(m => m.ArtistProfiles)
             .HasForeignKey(t => t.MemberId)

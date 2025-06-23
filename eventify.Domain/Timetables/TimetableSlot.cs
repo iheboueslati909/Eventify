@@ -1,0 +1,52 @@
+using System;
+using System.Collections.Generic;
+using eventify.Domain.ValueObjects;
+using eventify.SharedKernel;
+
+
+public class TimeTableSlot
+{
+    public Guid Id { get; private set; }
+    public Guid TimetableId { get; private set; } // Use only this property
+    public TimeSpan StartTime { get; private set; }
+    public TimeSpan EndTime { get; private set; }
+    public Title Title { get; private set; }
+    private readonly List<ArtistProfile> _artistProfiles = new();
+    public IReadOnlyCollection<ArtistProfile> ArtistProfiles => _artistProfiles.AsReadOnly();
+
+
+    private TimeTableSlot() { }
+
+    private TimeTableSlot(Guid timetableId, TimeSpan startTime, TimeSpan endTime, Title title)
+    {
+        if (startTime >= endTime)
+            throw new ArgumentException("Start time must be before end time.", nameof(startTime));
+
+        Id = Guid.NewGuid();
+        TimetableId = timetableId;
+        StartTime = startTime;
+        EndTime = endTime;
+        Title = title;
+    }
+
+    public static Result<TimeTableSlot> Create(Guid timetableId, TimeSpan startTime, TimeSpan endTime, Title title)
+    {
+        if (startTime >= endTime)
+            return Result.Failure<TimeTableSlot>("Start time must be before end time");
+
+        if (title == null)
+            return Result.Failure<TimeTableSlot>("Title cannot be null");
+
+        return Result.Success(new TimeTableSlot(timetableId, startTime, endTime, title));
+    }
+
+    internal void SetTimeTableId(Guid timetableId)
+    {
+        TimetableId = timetableId;
+    }
+
+        public void AssignArtist(ArtistProfile artist)
+    {
+        _artistProfiles.Add(artist);
+    }
+}

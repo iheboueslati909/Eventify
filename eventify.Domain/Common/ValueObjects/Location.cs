@@ -1,11 +1,15 @@
+using System.Text.Json.Serialization;
 namespace eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
 
 public class Location
 {
-    public string Address { get; }
+    public string Address { get; private set; }
 
-    private Location(string address)
+    public Location() { } // For deserialization
+
+    [JsonConstructor]
+    public Location(string address)
     {
         Address = address;
     }

@@ -1,9 +1,7 @@
-﻿using eventify.Domain.Enums;
+using System;
+using eventify.Domain.Enums;
 using eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
-
-namespace eventify.Domain.Entities;
-
 public class ArtistProfile
 {
     public Guid Id { get; private set; }
@@ -11,7 +9,8 @@ public class ArtistProfile
     public Name ArtistName { get; private set; }
     public Bio? Bio { get; private set; }
     public bool IsDeleted { get; private set; } = false;
-    private MusicGenreCollection _genres = MusicGenreCollection.Empty.Value;
+    private MusicGenreCollection _genres;
+
     public IReadOnlyCollection<MusicGenre> Genres => _genres.Genres;
     public Email Email { get; private set; }
     public SocialMediaLinks? SocialMediaLinks { get; private set; }
@@ -23,7 +22,7 @@ public class ArtistProfile
         Name artistName,
         Email email,
         Bio bio,
-        IEnumerable<MusicGenre> genres,
+        MusicGenreCollection genres,
         SocialMediaLinks? socialMediaLinks
         )
     {
@@ -33,7 +32,7 @@ public class ArtistProfile
         Email = email;
         Bio = bio;
         SocialMediaLinks = socialMediaLinks;
-        _genres = MusicGenreCollection.Create(genres).Value;
+        _genres = genres;
     }
 
     public static Result<ArtistProfile> Create(
@@ -42,9 +41,9 @@ public class ArtistProfile
         Email email,
         Bio bio,
         SocialMediaLinks socialMediaLinks,
-        IEnumerable<MusicGenre> genres)
+        MusicGenreCollection genres)
     {
-        return Result.Success(new ArtistProfile(memberId, artistName, email, bio ,genres, socialMediaLinks));
+        return Result.Success(new ArtistProfile(memberId, artistName, email, bio, genres, socialMediaLinks));
     }
 
     public Result UpdateInformation(

@@ -1,13 +1,15 @@
-﻿namespace eventify.Domain.ValueObjects;
+﻿using System.Text.Json.Serialization;
+namespace eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
 
 public class Description
 {
     public string Value { get; }
 
-    private Description() { } // Required for EF Core
+    public Description() { } // For deserialization
 
-    private Description(string value)
+    [JsonConstructor]
+    public Description(string value)
     {
         Value = value;
     }

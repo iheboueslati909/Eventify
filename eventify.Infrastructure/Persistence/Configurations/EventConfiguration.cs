@@ -48,6 +48,11 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
             .WithMany()
             .HasForeignKey(e => e.ConceptId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(e => e.Timetables)
+            .WithOne()
+            .HasForeignKey(t => t.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
  
         builder.HasIndex(e => e.ConceptId);
         builder.HasIndex(e => e.Status);

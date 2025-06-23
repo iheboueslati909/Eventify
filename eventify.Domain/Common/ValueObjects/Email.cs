@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using eventify.SharedKernel;
 
 namespace eventify.Domain.ValueObjects;
@@ -7,12 +8,13 @@ public class Email
 {
     public string Value { get; }
 
-    private Email(string value)
+    public Email() { } // For deserialization
+
+    [JsonConstructor]
+    public Email(string value)
     {
         Value = value;
     }
-
-    private Email() { } // Required for EF Core
 
     public static Result<Email> Create(string value)
     {

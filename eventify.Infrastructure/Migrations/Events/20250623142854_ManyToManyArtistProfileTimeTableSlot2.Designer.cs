@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using eventify.Infrastructure.Extensions;
@@ -11,9 +12,11 @@ using eventify.Infrastructure.Extensions;
 namespace eventify.Infrastructure.Migrations.Events
 {
     [DbContext(typeof(EventsDbContext))]
-    partial class EventsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250623142854_ManyToManyArtistProfileTimeTableSlot2")]
+    partial class ManyToManyArtistProfileTimeTableSlot2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,28 +25,19 @@ namespace eventify.Infrastructure.Migrations.Events
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ArtistProfile", b =>
+            modelBuilder.Entity("ArtistProfileTimeTableSlot", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("ArtistProfilesId")
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("MemberId")
+                    b.Property<Guid>("TimeTableSlotsId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("_genres")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("Genres");
+                    b.HasKey("ArtistProfilesId", "TimeTableSlotsId");
 
-                    b.HasKey("Id");
+                    b.HasIndex("TimeTableSlotsId");
 
-                    b.HasIndex("MemberId");
-
-                    b.ToTable("ArtistProfiles");
+                    b.ToTable("ArtistProfileTimeTableSlot");
                 });
 
             modelBuilder.Entity("Eventify.Domain.Members.MemberFollow", b =>
@@ -78,28 +72,6 @@ namespace eventify.Infrastructure.Migrations.Events
                     b.ToTable("MemberFollow");
                 });
 
-            modelBuilder.Entity("TimeTableSlot", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("interval");
-
-                    b.Property<TimeSpan>("StartTime")
-                        .HasColumnType("interval");
-
-                    b.Property<Guid>("TimetableId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TimetableId");
-
-                    b.ToTable("TimeTableSlots");
-                });
-
             modelBuilder.Entity("TimeTableSlotArtistProfiles", b =>
                 {
                     b.Property<Guid>("ArtistProfileId")
@@ -112,23 +84,31 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasIndex("TimeTableSlotId");
 
-                    b.ToTable("TimeTableSlotArtistProfiles");
+                    b.ToTable("TimeTableSlotArtistProfiles", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable", b =>
+            modelBuilder.Entity("eventify.Domain.Entities.ArtistProfile", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("EventId")
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("MemberId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("_genres")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("Genres");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("MemberId");
 
-                    b.ToTable("TimeTables");
+                    b.ToTable("ArtistProfiles");
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.Concept", b =>
@@ -229,7 +209,75 @@ namespace eventify.Infrastructure.Migrations.Events
                     b.ToTable("RecordedPerformances");
                 });
 
-            modelBuilder.Entity("ArtistProfile", b =>
+            modelBuilder.Entity("eventify.Domain.Entities.TimeTable", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("TimeTables");
+                });
+
+            modelBuilder.Entity("eventify.Domain.Entities.TimeTableSlot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("interval");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("interval");
+
+                    b.Property<Guid>("TimeTableId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TimeTableId");
+
+                    b.ToTable("TimeTableSlots");
+                });
+
+            modelBuilder.Entity("ArtistProfileTimeTableSlot", b =>
+                {
+                    b.HasOne("eventify.Domain.Entities.ArtistProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ArtistProfilesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("eventify.Domain.Entities.TimeTableSlot", null)
+                        .WithMany()
+                        .HasForeignKey("TimeTableSlotsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TimeTableSlotArtistProfiles", b =>
+                {
+                    b.HasOne("eventify.Domain.Entities.ArtistProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ArtistProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("eventify.Domain.Entities.TimeTableSlot", null)
+                        .WithMany()
+                        .HasForeignKey("TimeTableSlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("eventify.Domain.Entities.ArtistProfile", b =>
                 {
                     b.HasOne("eventify.Domain.Entities.Member", null)
                         .WithMany("ArtistProfiles")
@@ -333,81 +381,6 @@ namespace eventify.Infrastructure.Migrations.Events
                         .IsRequired();
 
                     b.Navigation("SocialMediaLinks");
-                });
-
-            modelBuilder.Entity("TimeTableSlot", b =>
-                {
-                    b.HasOne("Timetable", null)
-                        .WithMany("Slots")
-                        .HasForeignKey("TimetableId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("eventify.Domain.ValueObjects.Title", "Title", b1 =>
-                        {
-                            b1.Property<Guid>("TimeTableSlotId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Title");
-
-                            b1.HasKey("TimeTableSlotId");
-
-                            b1.ToTable("TimeTableSlots");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TimeTableSlotId");
-                        });
-
-                    b.Navigation("Title")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("TimeTableSlotArtistProfiles", b =>
-                {
-                    b.HasOne("ArtistProfile", null)
-                        .WithMany()
-                        .HasForeignKey("ArtistProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TimeTableSlot", null)
-                        .WithMany()
-                        .HasForeignKey("TimeTableSlotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Timetable", b =>
-                {
-                    b.HasOne("eventify.Domain.Entities.Event", null)
-                        .WithMany("Timetables")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("eventify.Domain.ValueObjects.Title", "StageName", b1 =>
-                        {
-                            b1.Property<Guid>("TimetableId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("StageName");
-
-                            b1.HasKey("TimetableId");
-
-                            b1.ToTable("TimeTables");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TimetableId");
-                        });
-
-                    b.Navigation("StageName")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.Concept", b =>
@@ -623,19 +596,79 @@ namespace eventify.Infrastructure.Migrations.Events
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Timetable", b =>
+            modelBuilder.Entity("eventify.Domain.Entities.TimeTable", b =>
                 {
-                    b.Navigation("Slots");
+                    b.HasOne("eventify.Domain.Entities.Event", null)
+                        .WithMany("TimeTables")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("eventify.Domain.ValueObjects.Title", "StageName", b1 =>
+                        {
+                            b1.Property<Guid>("TimeTableId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("StageName");
+
+                            b1.HasKey("TimeTableId");
+
+                            b1.ToTable("TimeTables");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TimeTableId");
+                        });
+
+                    b.Navigation("StageName")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("eventify.Domain.Entities.TimeTableSlot", b =>
+                {
+                    b.HasOne("eventify.Domain.Entities.TimeTable", null)
+                        .WithMany("Slots")
+                        .HasForeignKey("TimeTableId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("eventify.Domain.ValueObjects.Title", "Title", b1 =>
+                        {
+                            b1.Property<Guid>("TimeTableSlotId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("Title");
+
+                            b1.HasKey("TimeTableSlotId");
+
+                            b1.ToTable("TimeTableSlots");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TimeTableSlotId");
+                        });
+
+                    b.Navigation("Title")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.Event", b =>
                 {
-                    b.Navigation("Timetables");
+                    b.Navigation("TimeTables");
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.Member", b =>
                 {
                     b.Navigation("ArtistProfiles");
+                });
+
+            modelBuilder.Entity("eventify.Domain.Entities.TimeTable", b =>
+                {
+                    b.Navigation("Slots");
                 });
 #pragma warning restore 612, 618
         }

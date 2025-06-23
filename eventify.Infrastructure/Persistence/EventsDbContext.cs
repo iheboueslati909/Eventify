@@ -8,7 +8,7 @@ public class EventsDbContext : DbContext
     public EventsDbContext(DbContextOptions<EventsDbContext> options) : base(options) { }
 
     public DbSet<Event> Events { get; set; }
-    public DbSet<TimeTable> TimeTables { get; set; }
+    public DbSet<Timetable> TimeTables { get; set; }
     public DbSet<TimeTableSlot> TimeTableSlots { get; set; }
     public DbSet<Member> Members { get; set; }
     public DbSet<Concept> Concepts { get; set; }

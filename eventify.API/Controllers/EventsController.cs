@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using eventify.Application.Common.Interfaces;
 using eventify.Application.Events.Queries;
+using eventify.Application.Events.Commands;
 using eventify.SharedKernel;
 using eventify.Domain.Entities;
 
@@ -32,5 +33,19 @@ public class EventsController : ControllerBase
             return BadRequest(result.Error);
 
         return Ok(result.Value);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateEventCommand command)
+    {
+        var result = await _commandDispatcher.Dispatch<CreateEventCommand, Result<Guid>>(
+            command,
+            CancellationToken.None);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        // Return 201 Created with the event ID in the response body
+        return CreatedAtAction(nameof(GetPublished), new { id = result.Value }, result.Value);
     }
 }

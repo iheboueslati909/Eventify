@@ -9,9 +9,9 @@ public class TimeTableSlotConfiguration : IEntityTypeConfiguration<TimeTableSlot
 {
     public void Configure(EntityTypeBuilder<TimeTableSlot> builder)
     {
-        builder.HasOne<TimeTable>()
+        builder.HasOne<Timetable>()
                .WithMany(t => t.Slots)
-               .HasForeignKey(tt => tt.TimeTableId)
+               .HasForeignKey(tt => tt.TimetableId)
                .OnDelete(DeleteBehavior.Cascade);
 
         builder.OwnsOne(t => t.Title, tt =>
@@ -20,5 +20,12 @@ public class TimeTableSlotConfiguration : IEntityTypeConfiguration<TimeTableSlot
               .HasColumnName("Title")
               .IsRequired();
         });
+
+        builder.HasMany(s => s.ArtistProfiles)
+            .WithMany()
+            .UsingEntity<Dictionary<string, object>>(
+                "TimeTableSlotArtistProfiles",
+                j => j.HasOne<ArtistProfile>().WithMany().HasForeignKey("ArtistProfileId"),
+                j => j.HasOne<TimeTableSlot>().WithMany().HasForeignKey("TimeTableSlotId"));
     }
 }

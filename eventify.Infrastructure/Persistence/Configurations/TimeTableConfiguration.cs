@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace eventify.Infrastructure.Persistence.Configurations;
 
-public class TimeTableConfiguration : IEntityTypeConfiguration<TimeTable>
+public class TimeTableConfiguration : IEntityTypeConfiguration<Timetable>
 {
-    public void Configure(EntityTypeBuilder<TimeTable> builder)
+    public void Configure(EntityTypeBuilder<Timetable> builder)
     {
         builder.HasOne<Event>()
-               .WithMany( e => e.TimeTables)
+               .WithMany(e => e.Timetables)
                .HasForeignKey(t => t.EventId)
                .OnDelete(DeleteBehavior.Cascade);
 
@@ -20,6 +20,11 @@ public class TimeTableConfiguration : IEntityTypeConfiguration<TimeTable>
                 .HasColumnName("StageName")
                 .IsRequired();
         });
+        
+        builder.HasMany(t => t.Slots)
+            .WithOne()
+            .HasForeignKey(s => s.TimetableId)
+            .OnDelete(DeleteBehavior.Cascade);
         
     }
 }

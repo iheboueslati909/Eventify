@@ -21,13 +21,22 @@ public class Event
     public Guid ConceptId { get; private set; }
     public bool IsDeleted { get; private set; } = false;
 
-    private readonly List<TimeTable> _timeTables = new();
-    public IReadOnlyCollection<TimeTable> TimeTables => _timeTables.AsReadOnly();
+    private readonly List<Timetable> _timetables = new();
+    public IReadOnlyCollection<Timetable> Timetables => _timetables.AsReadOnly();
 
     private Event() { } // Required for EF Core
 
-    private Event(Title title, Description description, DateTime startDate, DateTime endDate, Location location, EventType type, Guid conceptId)
+    private Event(
+        Title title,
+        Description description,
+        DateTime startDate,
+        DateTime endDate,
+        Location location,
+        EventType type,
+        Guid conceptId,
+        List<Timetable> timetables)
     {
+        Id = Guid.NewGuid();
         Title = title;
         Description = description;
         StartDate = startDate;
@@ -35,10 +44,28 @@ public class Event
         Location = location;
         Type = type;
         ConceptId = conceptId;
+        if (timetables != null)
+            _timetables.AddRange(timetables);
 
+        foreach (var timetable in _timetables)
+        {
+            timetable.SetEventId(Id);
+            foreach (var slot in timetable.Slots)
+            {
+                slot.SetTimeTableId(timetable.Id);
+            }
+        }
     }
 
-    public static Result<Event> Create(Title title, Description description, DateTime startDate, DateTime endDate, Location location, EventType type, Guid conceptId)
+    public static Result<Event> Create(
+        Title title,
+        Description description,
+        DateTime startDate,
+        DateTime endDate,
+        Location location,
+        EventType type,
+        Guid conceptId,
+        IEnumerable<(Title StageName, IEnumerable<(TimeSpan StartTime, TimeSpan EndTime, Title SlotTitle, IEnumerable<ArtistProfile> ArtistProfiles)> Slots)> timetables)
     {
         if (startDate >= endDate)
             return Result.Failure<Event>("End date must be after start date");
@@ -49,9 +76,45 @@ public class Event
         if (title == null) throw new ArgumentNullException(nameof(title));
         if (description == null) throw new ArgumentNullException(nameof(description));
         if (location == null) throw new ArgumentNullException(nameof(location));
+        if (timetables == null)
+            return Result.Failure<Event>("At least one timetable is required.");
 
-        return Result.Success(new Event(title, description, startDate, endDate, location, type, conceptId));
-    }   
+        var timetableEntities = new List<Timetable>();
+
+        foreach (var (stageName, slots) in timetables)
+        {
+            if (stageName == null)
+                return Result.Failure<Event>("Stage name cannot be null.");
+
+            var slotEntities = new List<TimeTableSlot>();
+            foreach (var (startTime, endTime, slotTitle, artistProfiles) in slots)
+            {
+                if (slotTitle == null)
+                    return Result.Failure<Event>("Slot title cannot be null.");
+
+                var slotResult = TimeTableSlot.Create(Guid.Empty, startTime, endTime, slotTitle);
+                if (slotResult.IsFailure)
+                    return Result.Failure<Event>(slotResult.Error);
+
+                var slot = slotResult.Value;
+                foreach (var artistProfile in artistProfiles ?? Array.Empty<ArtistProfile>())
+                {
+                    slot.AssignArtist(artistProfile);
+                }
+                slotEntities.Add(slot);
+            }
+
+            var timetableResult = Timetable.Create(stageName, slotEntities, Guid.Empty);
+            if (timetableResult.IsFailure)
+                return Result.Failure<Event>(timetableResult.Error);
+
+            timetableEntities.Add(timetableResult.Value);
+        }
+
+        var @event = new Event(title, description, startDate, endDate, location, type, conceptId, timetableEntities);
+
+        return Result.Success(@event);
+    }
 
     //isPublished
     public bool IsPublished => Status == EventStatus.Published;
@@ -105,9 +168,9 @@ public class Event
         Status = EventStatus.Draft;
     }
 
-    public void AddTimeTable(TimeTable table)
+    public void AddTimetable(Timetable timetable)
     {
-        _timeTables.Add(table);
+        _timetables.Add(timetable);
     }
 
     public void SoftDelete()

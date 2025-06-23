@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 namespace eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
 
@@ -5,9 +6,10 @@ public class Name
 {
     public string Value { get; }
 
-    private Name() { } // Required for EF Core
+    public Name() { } // For deserialization
 
-    private Name(string value)
+    [JsonConstructor]
+    public Name(string value)
     {
         Value = value;
     }
