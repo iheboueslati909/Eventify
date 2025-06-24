@@ -55,3 +55,34 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    
+    - name: Install EF Core CLI
+      run: dotnet tool install --global dotnet-ef
+
+    # Migrate AppIdentityDbContext
+    - name: Create EF Bundle for Identity DB
+      run: |
+        dotnet ef migrations bundle \
+          --project eventify.Infrastructure \
+          --startup-project eventify.API \
+          --output identity-migrate.exe \
+          --context AppIdentityDbContext
+
+    - name: Run Identity Migration Bundle
+      run: ./identity-migrate.exe
+      env:
+        ConnectionStrings__Default: ${{ secrets.DEV_DB_CONNECTION_STRING }}
+
+    # Migrate EventsDbContext
+    - name: Create EF Bundle for Events DB
+      run: |
+        dotnet ef migrations bundle \
+          --project eventify.Infrastructure \
+          --startup-project eventify.API \
+          --output events-migrate.exe \
+          --context EventsDbContext
+
+    - name: Run Events Migration Bundle
+      run: ./events-migrate.exe
+      env:
+        ConnectionStrings__Default: ${{ secrets.DEV_DB_CONNECTION_STRING }}
