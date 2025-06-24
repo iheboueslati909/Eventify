@@ -83,8 +83,11 @@ jobs:
           --output identity-migrate.exe \
           --context AppIdentityDbContext
 
+    - name: Copy appsettings.json for Identity Migration
+      run: cp ./eventify.API/appsettings.json ./appsettings.json
+
     - name: Run Identity Migration Bundle
-      run: ./identity-migrate.exe
+      run: ./identity-migrate.exe --verbose
       env:
         ConnectionStrings__Default: ${{ secrets.DEV_DB_CONNECTION_STRING }}
 
@@ -97,7 +100,10 @@ jobs:
           --output events-migrate.exe \
           --context EventsDbContext
 
+    - name: Copy appsettings.json for Events Migration
+      run: cp ./eventify.API/appsettings.json ./appsettings.json
+
     - name: Run Events Migration Bundle
-      run: ./events-migrate.exe
+      run: ./events-migrate.exe --verbose
       env:
         ConnectionStrings__Default: ${{ secrets.DEV_DB_CONNECTION_STRING }}

@@ -5,6 +5,7 @@ namespace eventify.Infrastructure.Extensions;
 
 public class EventsDbContext : DbContext
 {
+    public EventsDbContext() : base() { }
     public EventsDbContext(DbContextOptions<EventsDbContext> options) : base(options) { }
 
     public DbSet<Event> Events { get; set; }

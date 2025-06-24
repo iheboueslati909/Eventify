@@ -10,15 +10,20 @@ namespace eventify.Infrastructure.Persistence
     {
         public AppIdentityDbContext CreateDbContext(string[] args)
         {
-            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../eventify.API");
+        var basePath = Path.Combine(Directory.GetCurrentDirectory());
 
-            var config = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder()
                 .SetBasePath(basePath)
                 .AddJsonFile("appsettings.json", optional: false)
+                .AddEnvironmentVariables()
                 .Build();
 
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
             var optionsBuilder = new DbContextOptionsBuilder<AppIdentityDbContext>();
-            optionsBuilder.UseNpgsql(config.GetConnectionString("DefaultConnection"));
+            optionsBuilder.UseNpgsql(connectionString);
 
             return new AppIdentityDbContext(optionsBuilder.Options);
         }
