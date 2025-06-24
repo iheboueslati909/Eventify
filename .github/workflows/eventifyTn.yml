@@ -63,8 +63,8 @@ jobs:
     - name: Create EF Bundle for Identity DB
       run: |
         dotnet ef migrations bundle \
-          --project eventify.Infrastructure \
-          --startup-project eventify.API \
+          --project ./eventify.Infrastructure \
+          --startup-project ./eventify.API \
           --output identity-migrate.exe \
           --context AppIdentityDbContext
 
@@ -77,8 +77,8 @@ jobs:
     - name: Create EF Bundle for Events DB
       run: |
         dotnet ef migrations bundle \
-          --project eventify.Infrastructure \
-          --startup-project eventify.API \
+          --project ./eventify.Infrastructure \
+          --startup-project ./eventify.API \
           --output events-migrate.exe \
           --context EventsDbContext
 
