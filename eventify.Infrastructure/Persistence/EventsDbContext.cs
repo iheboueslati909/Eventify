@@ -15,6 +15,7 @@ public class EventsDbContext : DbContext
     public DbSet<Concept> Concepts { get; set; }
     public DbSet<RecordedPerformance> RecordedPerformances { get; set; }
     public DbSet<ArtistProfile> ArtistProfiles { get; set; }
+    public DbSet<Club> Clubs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,7 +24,8 @@ public class EventsDbContext : DbContext
         modelBuilder.Entity<Event>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Member>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<ArtistProfile>().HasQueryFilter(e => !e.IsDeleted);
-
+        modelBuilder.Entity<Club>().HasQueryFilter(e => !e.IsDeleted);
+        
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(EventsDbContext).Assembly);
     }
 }

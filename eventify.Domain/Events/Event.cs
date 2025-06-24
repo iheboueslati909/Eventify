@@ -21,6 +21,8 @@ public class Event
     public Guid ConceptId { get; private set; }
     public bool IsDeleted { get; private set; } = false;
 
+    public Guid? ClubId { get; private set; } // Optional Club reference
+
     private readonly List<Timetable> _timetables = new();
     public IReadOnlyCollection<Timetable> Timetables => _timetables.AsReadOnly();
 
@@ -34,7 +36,8 @@ public class Event
         Location location,
         EventType type,
         Guid conceptId,
-        List<Timetable> timetables)
+        List<Timetable> timetables,
+        Guid? clubId = null)
     {
         Id = Guid.NewGuid();
         Title = title;
@@ -44,6 +47,7 @@ public class Event
         Location = location;
         Type = type;
         ConceptId = conceptId;
+        ClubId = clubId;
         if (timetables != null)
             _timetables.AddRange(timetables);
 
@@ -65,7 +69,8 @@ public class Event
         Location location,
         EventType type,
         Guid conceptId,
-        IEnumerable<(Title StageName, IEnumerable<(TimeSpan StartTime, TimeSpan EndTime, Title SlotTitle, IEnumerable<ArtistProfile> ArtistProfiles)> Slots)> timetables)
+        IEnumerable<(Title StageName, IEnumerable<(TimeSpan StartTime, TimeSpan EndTime, Title SlotTitle, IEnumerable<ArtistProfile> ArtistProfiles)> Slots)> timetables,
+        Guid? clubId = null)
     {
         if (startDate >= endDate)
             return Result.Failure<Event>("End date must be after start date");
@@ -111,7 +116,7 @@ public class Event
             timetableEntities.Add(timetableResult.Value);
         }
 
-        var @event = new Event(title, description, startDate, endDate, location, type, conceptId, timetableEntities);
+        var @event = new Event(title, description, startDate, endDate, location, type, conceptId, timetableEntities, clubId);
 
         return Result.Success(@event);
     }

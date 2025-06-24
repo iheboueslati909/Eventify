@@ -27,7 +27,7 @@ builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<IMemberFollowRepository, MemberFollowRepository>();
 builder.Services.AddScoped<ITimeTableSlotRepository, TimeTableSlotRepository>();
 builder.Services.AddScoped<IArtistProfileRepository, ArtistProfileRepository>();
-
+builder.Services.AddScoped<IClubRepository, ClubRepository>();
 
 builder.Services.Scan(scan => scan
     .FromAssemblyOf<IApplicationMarker>()

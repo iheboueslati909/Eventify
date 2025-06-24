@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using eventify.Infrastructure.Extensions;
@@ -12,9 +13,11 @@ using eventify.Infrastructure.Extensions;
 namespace eventify.Infrastructure.Migrations.Events
 {
     [DbContext(typeof(EventsDbContext))]
-    partial class EventsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250624233359_ClubEntity")]
+    partial class ClubEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
