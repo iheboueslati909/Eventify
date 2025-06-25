@@ -34,4 +34,17 @@ public class ConceptsController : ControllerBase
 
         return Ok(result.Value);
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateConceptCommand command)
+    {
+        var result = await _commandDispatcher.Dispatch<CreateConceptCommand, Result<Guid>>(
+            command,
+            CancellationToken.None);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return CreatedAtAction(nameof(GetActive), new { id = result.Value }, result.Value);
+    }
 }
