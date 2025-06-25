@@ -1,4 +1,5 @@
 using eventify.Application.Common;
+using eventify.Application.Repositories;
 using eventify.Domain.Entities;
 using eventify.Domain.ValueObjects;
 using eventify.SharedKernel;
@@ -15,10 +16,12 @@ public record CreateClubCommand(
 public class CreateClubCommandHandler : ICommandHandler<CreateClubCommand, Result<Guid>>
 {
     private readonly IClubRepository _clubRepository;
+    private readonly IMemberRepository _memberRepository;
 
-    public CreateClubCommandHandler(IClubRepository clubRepository)
+    public CreateClubCommandHandler(IClubRepository clubRepository, IMemberRepository memberRepository)
     {
         _clubRepository = clubRepository;
+        _memberRepository = memberRepository;
     }
 
     public async Task<Result<Guid>> Handle(CreateClubCommand command, CancellationToken cancellationToken)
@@ -36,12 +39,15 @@ public class CreateClubCommandHandler : ICommandHandler<CreateClubCommand, Resul
 
         if (command.OwnerMemberIds == null || !command.OwnerMemberIds.Any())
             return Result.Failure<Guid>("At least one owner is required.");
+        var ownerMembers = _memberRepository.GetByIdsAsync(command.OwnerMemberIds.ToList(), cancellationToken).Result;
+        if (ownerMembers == null || !ownerMembers.Any())
+            return Result.Failure<Guid>("At least one valid owner member is required.");
 
         var clubResult = Club.Create(
             nameResult.Value,
             addressResult.Value,
             command.Capacity,
-            command.OwnerMemberIds
+            ownerMembers
         );
 
         if (clubResult.IsFailure)

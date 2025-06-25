@@ -30,31 +30,11 @@ public class ClubConfiguration : IEntityTypeConfiguration<Club>
             .HasDefaultValue(false);
 
         // Many-to-many: Club <-> Member (OwnerMemberIds)
-        builder
-            .HasMany<Member>()
+                builder.HasMany(s => s.owners)
             .WithMany()
             .UsingEntity<Dictionary<string, object>>(
-                "ClubOwner",
-                j => j
-                    .HasOne<Member>()
-                    .WithMany()
-                    .HasForeignKey("MemberId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => j
-                    .HasOne<Club>()
-                    .WithMany()
-                    .HasForeignKey("ClubId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j =>
-                {
-                    j.HasKey("ClubId", "MemberId");
-                    j.ToTable("ClubOwners");
-                });
-
-        // Backing field for OwnerMemberIds
-        builder
-            .Property(typeof(List<Guid>), "_ownerMemberIds")
-            .HasField("_ownerMemberIds")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
+                "MemberClubs",
+                j => j.HasOne<Member>().WithMany().HasForeignKey("MemberId"),
+                j => j.HasOne<Club>().WithMany().HasForeignKey("ClubId"));
     }
 }

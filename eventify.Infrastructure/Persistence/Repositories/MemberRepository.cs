@@ -46,4 +46,10 @@ public class MemberRepository : BaseRepository<Member>, IMemberRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
     }
+    public async Task<IList<Member>> GetByIdsAsync(IList<Guid> ids, CancellationToken cancellationToken = default)
+    {
+        return await _context.Members
+            .Where(m => ids.Contains(m.Id))
+            .ToListAsync(cancellationToken);
+    }
 }

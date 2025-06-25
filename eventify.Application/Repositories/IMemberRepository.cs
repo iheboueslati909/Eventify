@@ -11,4 +11,5 @@ public interface IMemberRepository : IRepository<Member>
     Task<Member?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task<IList<Member>> GetMembersWithArtistProfilesAsync();
     Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default);
+    Task<IList<Member>> GetByIdsAsync(IList<Guid> ids, CancellationToken cancellationToken = default);
 }

@@ -11,22 +11,22 @@ public class Club
     public int Capacity { get; private set; }
     public bool IsDeleted { get; private set; }
 
-    private readonly List<Guid> _ownerMemberIds = new();
-    public IReadOnlyCollection<Guid> OwnerMemberIds => _ownerMemberIds.AsReadOnly();
+    private readonly List<Member> _owners = new();
+    public IReadOnlyCollection<Member> owners => _owners.AsReadOnly();
 
     private Club() { }
 
-    private Club(Name name, Location address, int capacity, IEnumerable<Guid> ownerMemberIds)
+    private Club(Name name, Location address, int capacity, IEnumerable<Member> owners = null)
     {
         Id = Guid.NewGuid();
         Name = name;
         Address = address;
         Capacity = capacity;
-        if (ownerMemberIds != null)
-            _ownerMemberIds.AddRange(ownerMemberIds.Distinct());
+        if (owners != null)
+            _owners.AddRange(owners.Distinct());
     }
 
-    public static Result<Club> Create(Name name, Location address, int capacity, IEnumerable<Guid> ownerMemberIds)
+    public static Result<Club> Create(Name name, Location address, int capacity, IEnumerable<Member> owners)
     {
         if (name == null)
             return Result.Failure<Club>("Name cannot be null.");
@@ -34,25 +34,31 @@ public class Club
             return Result.Failure<Club>("Address cannot be null.");
         if (capacity <= 0)
             return Result.Failure<Club>("Capacity must be positive.");
-        if (ownerMemberIds == null || !ownerMemberIds.Any())
+        if (owners == null || !owners.Any())
             return Result.Failure<Club>("At least one owner is required.");
 
-        return Result.Success(new Club(name, address, capacity, ownerMemberIds));
+        return Result.Success(new Club(name, address, capacity, owners));
     }
 
-    public Result AddOwner(Guid memberId)
+    public Result AddOwner(Member member)
     {
-        if (_ownerMemberIds.Contains(memberId))
+        if (member == null)
+            return Result.Failure("Member cannot be null.");
+        if (_owners.Any(o => o.Id == member.Id))
             return Result.Failure("Member is already an owner.");
-        _ownerMemberIds.Add(memberId);
+
+        _owners.Add(member);
         return Result.Success();
     }
 
-    public Result RemoveOwner(Guid memberId)
+    public Result RemoveOwner(Member member)
     {
-        if (!_ownerMemberIds.Contains(memberId))
+        if (member == null)
+            return Result.Failure("Member cannot be null.");
+        if (!_owners.Any(o => o.Id == member.Id))
             return Result.Failure("Member is not an owner.");
-        _ownerMemberIds.Remove(memberId);
+
+        _owners.Remove(member);
         return Result.Success();
     }
 
