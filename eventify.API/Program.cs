@@ -12,6 +12,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using eventify.Infrastructure.Identity;
 using eventify.Application.Common.Interfaces;
+using MassTransit;
+using eventify.Infrastructure.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -28,6 +30,8 @@ builder.Services.AddScoped<IMemberFollowRepository, MemberFollowRepository>();
 builder.Services.AddScoped<ITimeTableSlotRepository, TimeTableSlotRepository>();
 builder.Services.AddScoped<IArtistProfileRepository, ArtistProfileRepository>();
 builder.Services.AddScoped<IClubRepository, ClubRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ITicketPurchaseRepository, TicketPurchaseRepository>();
 
 builder.Services.Scan(scan => scan
     .FromAssemblyOf<IApplicationMarker>()
@@ -76,7 +80,44 @@ builder.Services.AddSwaggerGen(opt =>
     opt.SwaggerDoc("v0", new OpenApiInfo { Title = "Eventify API", Version = "v0" });
 });
 
+builder.Services.AddOptions<RabbitMqConfig>()
+    .Bind(builder.Configuration.GetSection("RabbitMQ"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+    // MassTransit/RabbitMQ
+builder.Services.AddMassTransit(x =>
+{
+    // x.SetKebabCaseEndpointNameFormatter();
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var rabbitConfig = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMqConfig>();
+        cfg.Host(new Uri(rabbitConfig.Host), h =>
+        {
+            h.Username(rabbitConfig.Username);
+            h.Password(rabbitConfig.Password);
+        });
+        cfg.ConfigureEndpoints(context);
+    });
+});
+ builder.Services.AddSingleton<RabbitMqConnectionChecker>();
+
 var app = builder.Build();
+// Check RabbitMQ connection before starting
+using (var scope = app.Services.CreateScope())
+{
+    var rabbitChecker = scope.ServiceProvider.GetRequiredService<RabbitMqConnectionChecker>();
+    try
+    {
+        await rabbitChecker.EnsureConnectionIsAvailableAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogCritical(ex, "RabbitMQ is unavailable. Application will shut down.");
+        return;
+    }
+}
 
 if (args.Contains("--migrate"))
 {
