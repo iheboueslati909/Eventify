@@ -16,6 +16,10 @@ public class Member
     private readonly List<ArtistProfile> _artistProfiles = new();
     public IReadOnlyCollection<ArtistProfile> ArtistProfiles => _artistProfiles.AsReadOnly();
 
+    // Ticket navigation
+    private readonly List<Ticket> _tickets = new();
+    public IReadOnlyCollection<Ticket> Tickets => _tickets.AsReadOnly();
+
     private Member() { }
 
     private Member(Name firstName, Name lastName, Email email)

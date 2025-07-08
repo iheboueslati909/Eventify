@@ -16,6 +16,8 @@ public class EventsDbContext : DbContext
     public DbSet<RecordedPerformance> RecordedPerformances { get; set; }
     public DbSet<ArtistProfile> ArtistProfiles { get; set; }
     public DbSet<Club> Clubs { get; set; }
+    public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<TicketPurchase> TicketPurchases { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

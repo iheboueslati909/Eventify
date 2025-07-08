@@ -26,6 +26,10 @@ public class Event
     private readonly List<Timetable> _timetables = new();
     public IReadOnlyCollection<Timetable> Timetables => _timetables.AsReadOnly();
 
+    // Ticket navigation
+    private readonly List<Ticket> _tickets = new();
+    public IReadOnlyCollection<Ticket> Tickets => _tickets.AsReadOnly();
+
     private Event() { } // Required for EF Core
 
     private Event(

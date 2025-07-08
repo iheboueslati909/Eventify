@@ -93,7 +93,7 @@ public class IdentityService : IIdentityService
 
         var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
-        var appId = _configuration["AppId"] ?? 
+        var appId = _configuration["App:Id"] ?? 
             throw new InvalidOperationException("AppSettings:AppId not configured");
 
         var roles = await _userManager.GetRolesAsync(user);

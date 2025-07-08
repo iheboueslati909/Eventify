@@ -72,6 +72,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddHttpClient<IPaymentService, eventify.Infrastructure.Payment.PaymentService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
