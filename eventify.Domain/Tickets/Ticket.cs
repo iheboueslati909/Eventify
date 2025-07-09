@@ -18,6 +18,7 @@ public class Ticket
     public Currency Currency { get; private set; } = Currency.USD; // Default to USD, can be extended later
     public Event Event { get; private set; }
     public Member Creator { get; private set; }
+    public ICollection<TicketPurchase> TicketPurchases { get; private set; } = new List<TicketPurchase>();
 
     private Ticket() { }
 

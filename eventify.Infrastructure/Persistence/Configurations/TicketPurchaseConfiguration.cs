@@ -25,16 +25,16 @@ public class TicketPurchaseConfiguration : IEntityTypeConfiguration<TicketPurcha
         builder.Property(tp => tp.PaymentId)
             .IsRequired(false);
 
-        // One-to-one with Ticket
+        // TicketPurchase - Ticket (many-to-one)
         builder.HasOne(tp => tp.Ticket)
-            .WithOne()
-            .HasForeignKey<TicketPurchase>(tp => tp.TicketId)
+            .WithMany(t => t.TicketPurchases)
+            .HasForeignKey(tp => tp.TicketId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // One-to-one with Member (User)
+        // TicketPurchase - Member (User) (many-to-one)
         builder.HasOne(tp => tp.User)
-            .WithOne()
-            .HasForeignKey<TicketPurchase>(tp => tp.UserId)
+            .WithMany(m => m.TicketPurchases)
+            .HasForeignKey(tp => tp.UserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

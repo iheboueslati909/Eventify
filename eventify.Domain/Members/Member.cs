@@ -19,6 +19,7 @@ public class Member
     // Ticket navigation
     private readonly List<Ticket> _tickets = new();
     public IReadOnlyCollection<Ticket> Tickets => _tickets.AsReadOnly();
+    public ICollection<TicketPurchase> TicketPurchases { get; private set; } = new List<TicketPurchase>();
 
     private Member() { }
 

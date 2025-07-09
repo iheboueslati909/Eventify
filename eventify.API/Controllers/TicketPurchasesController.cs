@@ -19,12 +19,13 @@ public class TicketPurchasesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTicketPurchaseCommand command)
     {
-        var result = await _commandDispatcher.Dispatch<CreateTicketPurchaseCommand, Result<Guid>>(command, CancellationToken.None);
+        var result = await _commandDispatcher.Dispatch<CreateTicketPurchaseCommand, Result<CreateTicketPurchaseResult>>(command, CancellationToken.None);
 
         if (result.IsFailure)
             return BadRequest(result.Error);
 
-        return CreatedAtAction(null, new { id = result.Value }, result.Value);
+        // Return the full result (including checkoutUrl and paymentId)
+        return CreatedAtAction(null, new { id = result.Value.TicketPurchaseId }, result.Value);
     }
 
     [HttpPost("{id}/fulfill")]

@@ -72,14 +72,12 @@ namespace eventify.Infrastructure.Migrations.Events
             migrationBuilder.CreateIndex(
                 name: "IX_TicketPurchases_TicketId",
                 table: "TicketPurchases",
-                column: "TicketId",
-                unique: true);
+                column: "TicketId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TicketPurchases_UserId",
                 table: "TicketPurchases",
-                column: "UserId",
-                unique: true);
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tickets_CreatorId",

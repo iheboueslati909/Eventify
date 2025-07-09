@@ -331,11 +331,9 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TicketId")
-                        .IsUnique();
+                    b.HasIndex("TicketId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("TicketPurchases");
                 });
@@ -792,14 +790,14 @@ namespace eventify.Infrastructure.Migrations.Events
             modelBuilder.Entity("eventify.Domain.Entities.TicketPurchase", b =>
                 {
                     b.HasOne("eventify.Domain.Entities.Ticket", "Ticket")
-                        .WithOne()
-                        .HasForeignKey("eventify.Domain.Entities.TicketPurchase", "TicketId")
+                        .WithMany("TicketPurchases")
+                        .HasForeignKey("TicketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("eventify.Domain.Entities.Member", "User")
-                        .WithOne()
-                        .HasForeignKey("eventify.Domain.Entities.TicketPurchase", "UserId")
+                        .WithMany("TicketPurchases")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -824,7 +822,14 @@ namespace eventify.Infrastructure.Migrations.Events
                 {
                     b.Navigation("ArtistProfiles");
 
+                    b.Navigation("TicketPurchases");
+
                     b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("eventify.Domain.Entities.Ticket", b =>
+                {
+                    b.Navigation("TicketPurchases");
                 });
 #pragma warning restore 612, 618
         }

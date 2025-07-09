@@ -43,6 +43,12 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
             .HasForeignKey(t => t.CreatorId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Ticket - TicketPurchases (one-to-many)
+        builder.HasMany(t => t.TicketPurchases)
+            .WithOne(tp => tp.Ticket)
+            .HasForeignKey(tp => tp.TicketId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.OwnsOne(t => t.Name, n =>
         {
             n.Property(x => x.Value)
