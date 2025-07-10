@@ -12,8 +12,10 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using eventify.Infrastructure.Identity;
 using eventify.Application.Common.Interfaces;
-using MassTransit;
 using eventify.Infrastructure.Messaging;
+using MassTransit;
+using eventify.Infrastructure.Messaging.Consumers;
+
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -98,10 +100,15 @@ builder.Services.AddMassTransit(x =>
             h.Username(rabbitConfig.Username);
             h.Password(rabbitConfig.Password);
         });
-        cfg.ConfigureEndpoints(context);
+
+        cfg.ReceiveEndpoint("ticket-payment-processed", e =>
+        {
+            e.ConfigureConsumer<PaymentProcessedEventConsumer>(context);
+        });
     });
 });
- builder.Services.AddSingleton<RabbitMqConnectionChecker>();
+
+builder.Services.AddSingleton<RabbitMqConnectionChecker>();
 
 var app = builder.Build();
 // Check RabbitMQ connection before starting

@@ -43,7 +43,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasIndex("MemberId");
 
-                    b.ToTable("ArtistProfiles");
+                    b.ToTable("ArtistProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Eventify.Domain.Members.MemberFollow", b =>
@@ -75,7 +75,7 @@ namespace eventify.Infrastructure.Migrations.Events
                     b.HasIndex("MemberId", "TargetId", "TargetType")
                         .IsUnique();
 
-                    b.ToTable("MemberFollow");
+                    b.ToTable("MemberFollow", (string)null);
                 });
 
             modelBuilder.Entity("MemberClubs", b =>
@@ -90,7 +90,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasIndex("MemberId");
 
-                    b.ToTable("MemberClubs");
+                    b.ToTable("MemberClubs", (string)null);
                 });
 
             modelBuilder.Entity("TimeTableSlot", b =>
@@ -112,7 +112,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasIndex("TimetableId");
 
-                    b.ToTable("TimeTableSlots");
+                    b.ToTable("TimeTableSlots", (string)null);
                 });
 
             modelBuilder.Entity("TimeTableSlotArtistProfiles", b =>
@@ -127,7 +127,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasIndex("TimeTableSlotId");
 
-                    b.ToTable("TimeTableSlotArtistProfiles");
+                    b.ToTable("TimeTableSlotArtistProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Timetable", b =>
@@ -143,7 +143,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("TimeTables");
+                    b.ToTable("TimeTables", (string)null);
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.Club", b =>
@@ -170,7 +170,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clubs");
+                    b.ToTable("Clubs", (string)null);
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.Concept", b =>
@@ -194,7 +194,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasIndex("MemberId");
 
-                    b.ToTable("Concepts");
+                    b.ToTable("Concepts", (string)null);
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.Event", b =>
@@ -236,7 +236,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasIndex("StartDate", "EndDate");
 
-                    b.ToTable("Events");
+                    b.ToTable("Events", (string)null);
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.Member", b =>
@@ -250,7 +250,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasKey("Id");
 
-                    b.ToTable("Members");
+                    b.ToTable("Members", (string)null);
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.RecordedPerformance", b =>
@@ -271,7 +271,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasKey("Id");
 
-                    b.ToTable("RecordedPerformances");
+                    b.ToTable("RecordedPerformances", (string)null);
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.Ticket", b =>
@@ -305,7 +305,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("Tickets", (string)null);
                 });
 
             modelBuilder.Entity("eventify.Domain.Entities.TicketPurchase", b =>
@@ -335,7 +335,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketPurchases");
+                    b.ToTable("TicketPurchases", (string)null);
                 });
 
             modelBuilder.Entity("ArtistProfile", b =>
@@ -358,25 +358,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("ArtistProfileId");
 
-                            b1.ToTable("ArtistProfiles");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ArtistProfileId");
-                        });
-
-                    b.OwnsOne("eventify.Domain.ValueObjects.Email", "Email", b1 =>
-                        {
-                            b1.Property<Guid>("ArtistProfileId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Email");
-
-                            b1.HasKey("ArtistProfileId");
-
-                            b1.ToTable("ArtistProfiles");
+                            b1.ToTable("ArtistProfiles", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ArtistProfileId");
@@ -394,7 +376,25 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("ArtistProfileId");
 
-                            b1.ToTable("ArtistProfiles");
+                            b1.ToTable("ArtistProfiles", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ArtistProfileId");
+                        });
+
+                    b.OwnsOne("eventify.Domain.ValueObjects.Email", "Email", b1 =>
+                        {
+                            b1.Property<Guid>("ArtistProfileId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("Email");
+
+                            b1.HasKey("ArtistProfileId");
+
+                            b1.ToTable("ArtistProfiles", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ArtistProfileId");
@@ -427,7 +427,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("ArtistProfileId");
 
-                            b1.ToTable("ArtistProfiles");
+                            b1.ToTable("ArtistProfiles", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ArtistProfileId");
@@ -479,7 +479,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("TimeTableSlotId");
 
-                            b1.ToTable("TimeTableSlots");
+                            b1.ToTable("TimeTableSlots", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("TimeTableSlotId");
@@ -524,7 +524,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("TimetableId");
 
-                            b1.ToTable("TimeTables");
+                            b1.ToTable("TimeTables", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("TimetableId");
@@ -554,7 +554,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("ConceptId");
 
-                            b1.ToTable("Concepts");
+                            b1.ToTable("Concepts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ConceptId");
@@ -572,7 +572,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("ConceptId");
 
-                            b1.ToTable("Concepts");
+                            b1.ToTable("Concepts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ConceptId");
@@ -605,25 +605,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("EventId");
 
-                            b1.ToTable("Events");
-
-                            b1.WithOwner()
-                                .HasForeignKey("EventId");
-                        });
-
-                    b.OwnsOne("eventify.Domain.ValueObjects.Title", "Title", b1 =>
-                        {
-                            b1.Property<Guid>("EventId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Title");
-
-                            b1.HasKey("EventId");
-
-                            b1.ToTable("Events");
+                            b1.ToTable("Events", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("EventId");
@@ -641,7 +623,25 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("EventId");
 
-                            b1.ToTable("Events");
+                            b1.ToTable("Events", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("EventId");
+                        });
+
+                    b.OwnsOne("eventify.Domain.ValueObjects.Title", "Title", b1 =>
+                        {
+                            b1.Property<Guid>("EventId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("Title");
+
+                            b1.HasKey("EventId");
+
+                            b1.ToTable("Events", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("EventId");
@@ -671,7 +671,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("MemberId");
 
-                            b1.ToTable("Members");
+                            b1.ToTable("Members", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("MemberId");
@@ -689,7 +689,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("MemberId");
 
-                            b1.ToTable("Members");
+                            b1.ToTable("Members", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("MemberId");
@@ -707,7 +707,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("MemberId");
 
-                            b1.ToTable("Members");
+                            b1.ToTable("Members", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("MemberId");
@@ -737,7 +737,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("RecordedPerformanceId");
 
-                            b1.ToTable("RecordedPerformances");
+                            b1.ToTable("RecordedPerformances", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("RecordedPerformanceId");
@@ -773,7 +773,7 @@ namespace eventify.Infrastructure.Migrations.Events
 
                             b1.HasKey("TicketId");
 
-                            b1.ToTable("Tickets");
+                            b1.ToTable("Tickets", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("TicketId");
