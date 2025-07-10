@@ -91,7 +91,9 @@ builder.Services.AddOptions<RabbitMqConfig>()
     // MassTransit/RabbitMQ
 builder.Services.AddMassTransit(x =>
 {
-    // x.SetKebabCaseEndpointNameFormatter();
+    // Add this line to register your consumer
+    x.AddConsumer<PaymentProcessedEventConsumer>();
+
     x.UsingRabbitMq((context, cfg) =>
     {
         var rabbitConfig = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMqConfig>();
@@ -107,7 +109,6 @@ builder.Services.AddMassTransit(x =>
         });
     });
 });
-
 builder.Services.AddSingleton<RabbitMqConnectionChecker>();
 
 var app = builder.Build();
