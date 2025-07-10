@@ -14,6 +14,12 @@ public class TimeTableSlotConfiguration : IEntityTypeConfiguration<TimeTableSlot
                .HasForeignKey(tt => tt.TimetableId)
                .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(t => t.StartTime)
+            .IsRequired();
+
+        builder.Property(t => t.EndTime)
+            .IsRequired();
+
         builder.OwnsOne(t => t.Title, tt =>
         {
             tt.Property(t => t.Value)

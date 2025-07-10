@@ -8,8 +8,8 @@ public class TimeTableSlot
 {
     public Guid Id { get; private set; }
     public Guid TimetableId { get; private set; } // Use only this property
-    public TimeSpan StartTime { get; private set; }
-    public TimeSpan EndTime { get; private set; }
+    public DateTime StartTime { get; private set; }
+    public DateTime EndTime { get; private set; }
     public Title Title { get; private set; }
     private readonly List<ArtistProfile> _artistProfiles = new();
     public IReadOnlyCollection<ArtistProfile> ArtistProfiles => _artistProfiles.AsReadOnly();
@@ -17,27 +17,27 @@ public class TimeTableSlot
 
     private TimeTableSlot() { }
 
-    private TimeTableSlot(Guid timetableId, TimeSpan startTime, TimeSpan endTime, Title title)
+    private TimeTableSlot(Guid timetableId, DateTime StartTime, DateTime EndTime, Title title)
     {
-        if (startTime >= endTime)
-            throw new ArgumentException("Start time must be before end time.", nameof(startTime));
+        if (StartTime >= EndTime)
+            throw new ArgumentException("StartTime must be before EndTime.", nameof(StartTime));
 
         Id = Guid.NewGuid();
         TimetableId = timetableId;
-        StartTime = startTime;
-        EndTime = endTime;
+        StartTime = StartTime;
+        EndTime = EndTime;
         Title = title;
     }
 
-    public static Result<TimeTableSlot> Create(Guid timetableId, TimeSpan startTime, TimeSpan endTime, Title title)
+    public static Result<TimeTableSlot> Create(Guid timetableId, DateTime StartTime, DateTime EndTime, Title title)
     {
-        if (startTime >= endTime)
-            return Result.Failure<TimeTableSlot>("Start time must be before end time");
+        if (StartTime >= EndTime)
+            return Result.Failure<TimeTableSlot>("StartTime must be before EndTime");
 
         if (title == null)
             return Result.Failure<TimeTableSlot>("Title cannot be null");
 
-        return Result.Success(new TimeTableSlot(timetableId, startTime, endTime, title));
+        return Result.Success(new TimeTableSlot(timetableId, StartTime, EndTime, title));
     }
 
     internal void SetTimeTableId(Guid timetableId)
@@ -45,7 +45,7 @@ public class TimeTableSlot
         TimetableId = timetableId;
     }
 
-        public void AssignArtist(ArtistProfile artist)
+    public void AssignArtist(ArtistProfile artist)
     {
         _artistProfiles.Add(artist);
     }

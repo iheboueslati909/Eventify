@@ -19,7 +19,7 @@ public record TimeTableCreationDto(
     IEnumerable<TimeTableSlotDto> Slots);
 
 public record TimeTableSlotDto(
-    TimeSpan StartTime,
-    TimeSpan EndTime,
+    DateTime StartTime,
+    DateTime EndTime,
     string Title,
     IEnumerable<Guid> ArtistIds);

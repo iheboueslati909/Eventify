@@ -25,6 +25,7 @@ public class CreateEventCommandHandler  : ICommandHandler<CreateEventCommand, Re
 
     public async Task<Result<Guid>> Handle(CreateEventCommand request, CancellationToken cancellationToken)
     {
+
         // Flatten all (artistId, slotDto) pairs for conflict checking
         var artistSlotPairs = request.TimeTables
             .SelectMany(timetable => timetable.Slots
@@ -34,10 +35,9 @@ public class CreateEventCommandHandler  : ICommandHandler<CreateEventCommand, Re
         foreach (var (artistId, slotDto) in artistSlotPairs)
         {
             var conflicts = await _slotRepository.GetConflictingSlotsForArtistAsync(
-                artistId, slotDto.StartTime, cancellationToken);
+                artistId, slotDto.StartTime, slotDto.EndTime, cancellationToken);
 
-            if (conflicts.Any(conflict =>
-                (slotDto.StartTime < conflict.EndTime) && (slotDto.EndTime > conflict.StartTime)))
+            if (conflicts.Any())
             {
                 return Result.Failure<Guid>(
                     $"Artist {artistId} has a conflicting slot between {slotDto.StartTime} and {slotDto.EndTime}");
@@ -60,14 +60,14 @@ public class CreateEventCommandHandler  : ICommandHandler<CreateEventCommand, Re
             {
                 var stageTitleResult = Title.Create(timetableDto.StageName);
                 if (stageTitleResult.IsFailure)
-                    return (Error: stageTitleResult.Error, Value: default((Title, IEnumerable<(TimeSpan, TimeSpan, Title, IEnumerable<ArtistProfile>)>)));
+                    return (Error: stageTitleResult.Error, Value: default((Title, IEnumerable<(DateTime, DateTime, Title, IEnumerable<ArtistProfile>)>)));
 
-                var slotTuples = new List<(TimeSpan, TimeSpan, Title, IEnumerable<ArtistProfile>)>();
+                var slotTuples = new List<(DateTime, DateTime, Title, IEnumerable<ArtistProfile>)>();
                 foreach (var slotDto in timetableDto.Slots)
                 {
                     var slotTitleResult = Title.Create(slotDto.Title);
                     if (slotTitleResult.IsFailure)
-                        return (Error: slotTitleResult.Error, Value: default((Title, IEnumerable<(TimeSpan, TimeSpan, Title, IEnumerable<ArtistProfile>)>)));
+                        return (Error: slotTitleResult.Error, Value: default((Title, IEnumerable<(DateTime, DateTime, Title, IEnumerable<ArtistProfile>)>)));
 
                     var artistProfiles = allArtistProfiles
                         .Where(ap => slotDto.ArtistIds.Contains(ap.Id))

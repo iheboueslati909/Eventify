@@ -11,13 +11,17 @@ public class TimeTableSlotRepository : BaseRepository<TimeTableSlot>, ITimeTable
     {
     }
 
-    public async Task<List<TimeTableSlot>> GetConflictingSlotsForArtistAsync(Guid artistId, TimeSpan time, CancellationToken cancellationToken = default)
+    public async Task<List<TimeTableSlot>> GetConflictingSlotsForArtistAsync(
+        Guid artistId,
+        DateTime StartTime,
+        DateTime EndTime,
+        CancellationToken cancellationToken = default)
     {
         return await _context.TimeTableSlots
             .Where(slot =>
-                slot.StartTime <= time &&
-                slot.EndTime > time &&
-            slot.ArtistProfiles.Any(ap => ap.Id == artistId))
+                slot.ArtistProfiles.Any(ap => ap.Id == artistId) &&
+                slot.StartTime < EndTime &&
+                slot.EndTime > StartTime)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }

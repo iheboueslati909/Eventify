@@ -73,7 +73,7 @@ public class Event
         Location location,
         EventType type,
         Guid conceptId,
-        IEnumerable<(Title StageName, IEnumerable<(TimeSpan StartTime, TimeSpan EndTime, Title SlotTitle, IEnumerable<ArtistProfile> ArtistProfiles)> Slots)> timetables,
+        IEnumerable<(Title StageName, IEnumerable<(DateTime StartTime, DateTime EndTime, Title SlotTitle, IEnumerable<ArtistProfile> ArtistProfiles)> Slots)> timetables,
         Guid? clubId = null)
     {
         if (startDate >= endDate)
