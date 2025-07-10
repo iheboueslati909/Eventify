@@ -3,18 +3,19 @@ using eventify.Domain.ValueObjects;
 using eventify.Domain.Entities;
 using eventify.Domain.Enums;
 using eventify.SharedKernel;
+using eventify.Application.Common;
 
 
 namespace eventify.Application.Concepts.Commands;
 
-public class CreateConceptCommand
+public class CreateConceptCommand : ICommand<Result<Guid>>
 {
     public Guid MemberId { get; set; }
     public string Title { get; set; } = default!;
     public string Description { get; set; } = default!;
     public List<int> Genres { get; set; } = new();
 }
-public class CreateConceptHandler
+public class CreateConceptHandler : ICommandHandler<CreateConceptCommand, Result<Guid>>
 {
     private readonly IConceptRepository _conceptRepository;
 
@@ -23,7 +24,7 @@ public class CreateConceptHandler
         _conceptRepository = conceptRepository;
     }
 
-   public async Task<Result<Guid>> Handle(CreateConceptCommand command)
+   public async Task<Result<Guid>> Handle(CreateConceptCommand command, CancellationToken cancellationToken)
 {
     var titleResult = Title.Create(command.Title);
     if (titleResult.IsFailure)
@@ -43,19 +44,19 @@ public class CreateConceptHandler
         genres.Add((MusicGenre)genreValue);
     }
 
-    var genreCollection = MusicGenreCollection.Create(genres);
+    var genreCollectionResult = MusicGenreCollection.Create(genres);
+    if (genreCollectionResult.IsFailure)
+        return Result<Guid>.Failure(genreCollectionResult.Error);
 
-    if (genreCollection.IsFailure)
-        return Result<Guid>.Failure(genreCollection.Error);
+    var conceptResult = Concept.Create(command.MemberId, titleResult.Value, descriptionResult.Value, genreCollectionResult.Value);
+    if (conceptResult.IsFailure)
+        return Result<Guid>.Failure(conceptResult.Error);
 
-    var concept = Concept.Create(command.MemberId, titleResult.Value, descriptionResult.Value, genreCollection.Value);
 
-    if (!concept.IsSuccess)
-        return Result<Guid>.Failure(concept.Error);
-    await _conceptRepository.AddAsync(concept.Value);
+    await _conceptRepository.AddAsync(conceptResult.Value);
     await _conceptRepository.SaveChangesAsync();
 
-    return Result<Guid>.Success(concept.Value.Id);
+    return Result<Guid>.Success(conceptResult.Value.Id);
 }
 
 
