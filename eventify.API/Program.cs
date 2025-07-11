@@ -15,6 +15,7 @@ using eventify.Application.Common.Interfaces;
 using eventify.Infrastructure.Messaging;
 using MassTransit;
 using eventify.Infrastructure.Messaging.Consumers;
+using eventify.SharedKernel;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -88,27 +89,35 @@ builder.Services.AddOptions<RabbitMqConfig>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-    // MassTransit/RabbitMQ
+// MassTransit/RabbitMQ
 builder.Services.AddMassTransit(x =>
 {
-    // Add this line to register your consumer
     x.AddConsumer<PaymentProcessedEventConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
         var rabbitConfig = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMqConfig>();
+
         cfg.Host(new Uri(rabbitConfig.Host), h =>
         {
             h.Username(rabbitConfig.Username);
             h.Password(rabbitConfig.Password);
         });
 
+        cfg.Message<PaymentProcessedEvent>(x =>
+        {
+            x.SetEntityName("payment-processed");
+        });
+
         cfg.ReceiveEndpoint("ticket-payment-processed", e =>
         {
             e.ConfigureConsumer<PaymentProcessedEventConsumer>(context);
         });
+
+        cfg.ConfigureEndpoints(context);
     });
 });
+
 builder.Services.AddSingleton<RabbitMqConnectionChecker>();
 
 var app = builder.Build();

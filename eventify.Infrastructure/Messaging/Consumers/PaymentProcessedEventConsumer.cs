@@ -16,6 +16,7 @@ public class PaymentProcessedEventConsumer : IConsumer<PaymentProcessedEvent>
     public async Task Consume(ConsumeContext<PaymentProcessedEvent> context)
     {
         var message = context.Message;
+        Console.WriteLine($"*************PaymentProcessedEventConsumer: {message.PaymentId} - {message.IntentId}");
 
         if (message.Status != "Succeeded") return;
 
