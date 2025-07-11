@@ -104,10 +104,10 @@ builder.Services.AddMassTransit(x =>
             h.Password(rabbitConfig.Password);
         });
 
-        cfg.Message<PaymentProcessedEvent>(x =>
-        {
-            x.SetEntityName("payment-processed");
-        });
+        // cfg.Message<PaymentProcessedEvent>(x =>
+        // {
+        //     x.SetEntityName("payment-processed");
+        // });
 
         cfg.ReceiveEndpoint("ticket-payment-processed", e =>
         {
