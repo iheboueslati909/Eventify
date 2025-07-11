@@ -67,7 +67,7 @@ public class CreateTicketPurchaseCommandHandler : ICommandHandler<CreateTicketPu
         await _ticketPurchaseRepository.SaveChangesAsync();
 
         var paymentResult = await _paymentService.InitiatePaymentSession(
-            command.TicketId,
+            purchaseResult.Value.Id,
             command.UserId,
             ticket.Price,
             "usd",
