@@ -104,19 +104,23 @@ builder.Services.AddMassTransit(x =>
             h.Password(rabbitConfig.Password);
         });
 
-        // cfg.Message<PaymentProcessedEvent>(x =>
-        // {
-        //     x.SetEntityName("payment-processed");
-        // });
+        // Match the exchange name used by the publisher
+        cfg.Message<PaymentProcessedEvent>(x =>
+        {
+            x.SetEntityName("payment-processed");
+        });
 
         cfg.ReceiveEndpoint("ticket-payment-processed", e =>
         {
+            // Important: bind explicitly to the correct exchange
+            e.Bind<PaymentProcessedEvent>(); // This binds to "payment-processed" exchange
             e.ConfigureConsumer<PaymentProcessedEventConsumer>(context);
         });
 
         cfg.ConfigureEndpoints(context);
     });
 });
+
 
 builder.Services.AddSingleton<RabbitMqConnectionChecker>();
 
