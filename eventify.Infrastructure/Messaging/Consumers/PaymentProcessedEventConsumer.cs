@@ -20,11 +20,13 @@ public class PaymentProcessedEventConsumer : IConsumer<PaymentProcessedEvent>
         Console.WriteLine($"*************PaymentProcessedEventConsumer: {message.PaymentId} - {message.IntentId}");
 
         if (message.Status != "Succeeded") return;
+        if (!Guid.TryParse(message.IntentId, out var intentGuid)) return;
+        if (!Guid.TryParse(message.PaymentId, out var paymentGuid)) return;
 
-        var ticket = await _db.TicketPurchases.FindAsync(message.IntentId);
+        var ticket = await _db.TicketPurchases.FindAsync(intentGuid);
         if (ticket == null) return;
 
-        ticket.MarkAsPaid(new Guid(message.PaymentId));
+        ticket.MarkAsPaid(paymentGuid);
 
         await _db.SaveChangesAsync();
     }
