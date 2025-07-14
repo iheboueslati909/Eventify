@@ -1,7 +1,7 @@
 namespace Messaging.Contracts;
 
 public record PaymentProcessedEvent(
-    Guid PaymentId,
+    string PaymentId,
     string IntentId,
     string AppId,
     decimal Amount,

@@ -24,17 +24,8 @@ public class PaymentProcessedEventConsumer : IConsumer<PaymentProcessedEvent>
         var ticket = await _db.TicketPurchases.FindAsync(message.IntentId);
         if (ticket == null) return;
 
-        ticket.MarkAsPaid(message.PaymentId);
+        ticket.MarkAsPaid(new Guid(message.PaymentId));
 
-        var purchaseResult = eventify.Domain.Entities.TicketPurchase.Create(
-            ticket.Id,
-            new Guid(message.UserId),
-            message.PaymentId
-        );
-        if (purchaseResult.IsFailure)
-        {
-            return;
-        }
         await _db.SaveChangesAsync();
     }
 }
