@@ -15,7 +15,6 @@ using eventify.Application.Common.Interfaces;
 using eventify.Infrastructure.Messaging;
 using MassTransit;
 using eventify.Infrastructure.Messaging.Consumers;
-using eventify.SharedKernel;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -97,31 +96,22 @@ builder.Services.AddMassTransit(x =>
     x.UsingRabbitMq((context, cfg) =>
     {
         var rabbitConfig = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMqConfig>();
-        x.AddConsumer<PaymentProcessedEventConsumer>(); 
 
-        cfg.Host(new Uri(rabbitConfig.Host), h =>
+        cfg.Host(new Uri(rabbitConfig.Uri), h =>
         {
             h.Username(rabbitConfig.Username);
             h.Password(rabbitConfig.Password);
         });
 
-        // Match the exchange name used by the publisher
-        cfg.Message<PaymentProcessedEvent>(x =>
+        // This sets the queue name for this event
+        cfg.ReceiveEndpoint("payment-processed", e =>
         {
-            x.SetEntityName("payment-processed");
-        });
-
-        cfg.ReceiveEndpoint("ticket-payment-processed", e =>
-        {
-            // Important: bind explicitly to the correct exchange
-            e.Bind<PaymentProcessedEvent>(); // This binds to "payment-processed" exchange
             e.ConfigureConsumer<PaymentProcessedEventConsumer>(context);
         });
 
         cfg.ConfigureEndpoints(context);
     });
 });
-
 
 builder.Services.AddSingleton<RabbitMqConnectionChecker>();
 

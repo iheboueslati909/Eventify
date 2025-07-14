@@ -1,4 +1,4 @@
-namespace eventify.SharedKernel;
+namespace Messaging.Contracts;
 
 public record PaymentProcessedEvent(
     Guid PaymentId,

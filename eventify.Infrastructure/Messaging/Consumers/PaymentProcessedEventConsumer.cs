@@ -1,6 +1,7 @@
 using eventify.Infrastructure.Extensions;
 using eventify.SharedKernel;
 using MassTransit;
+using Messaging.Contracts;
 
 namespace eventify.Infrastructure.Messaging.Consumers;
 
