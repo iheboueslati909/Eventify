@@ -15,7 +15,11 @@ using eventify.Application.Common.Interfaces;
 using eventify.Infrastructure.Messaging;
 using MassTransit;
 using eventify.Infrastructure.Messaging.Consumers;
-
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Logs;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -115,7 +119,36 @@ builder.Services.AddMassTransit(x =>
 
 builder.Services.AddSingleton<RabbitMqConnectionChecker>();
 
+const string serviceName = "Eventify";
+builder.Logging.AddOpenTelemetry(options =>
+{
+    options
+        .SetResourceBuilder(
+            ResourceBuilder.CreateDefault()
+                .AddService(serviceName))
+        .AddConsoleExporter();
+});
+builder.Services.AddOpenTelemetry()
+      .ConfigureResource(resource => resource.AddService(serviceName))
+      .WithTracing(tracing => tracing
+          .AddAspNetCoreInstrumentation()
+          .AddHttpClientInstrumentation()
+          .AddConsoleExporter())
+      .WithMetrics(metrics => metrics
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddPrometheusExporter()
+          );
+    
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+});
+
 var app = builder.Build();
+
 // Check RabbitMQ connection before starting
 using (var scope = app.Services.CreateScope())
 {
@@ -179,5 +212,10 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseRouting();
+app.UseHttpMetrics();
+
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.MapControllers();
+
 app.Run();
