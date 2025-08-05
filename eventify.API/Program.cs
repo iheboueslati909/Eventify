@@ -20,6 +20,8 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Logs;
 using Prometheus;
+using Npgsql;
+using OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -119,33 +121,41 @@ builder.Services.AddMassTransit(x =>
 
 builder.Services.AddSingleton<RabbitMqConnectionChecker>();
 
-const string serviceName = "Eventify";
 builder.Logging.AddOpenTelemetry(options =>
 {
     options
         .SetResourceBuilder(
             ResourceBuilder.CreateDefault()
-                .AddService(serviceName))
+                .AddService(builder.Configuration["AppId"] ?? "eventify.API")
+                .AddAttributes([
+            new KeyValuePair<string, object>("deployment.environment", builder.Configuration["Environment"])
+        ]))
         .AddConsoleExporter();
 });
-builder.Services.AddOpenTelemetry()
-      .ConfigureResource(resource => resource.AddService(serviceName))
-      .WithTracing(tracing => tracing
-          .AddAspNetCoreInstrumentation()
-          .AddHttpClientInstrumentation()
-          .AddConsoleExporter())
-      .WithMetrics(metrics => metrics
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService(builder.Configuration["AppId"] ?? "eventify.API")
+    .AddAttributes([
+            new KeyValuePair<string, object>("deployment.environment", builder.Configuration["Environment"])
+        ]))
+    .WithTracing(tracing =>
+    {
+        tracing
             .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
             .AddHttpClientInstrumentation()
-            .AddPrometheusExporter()
-          );
+            .AddEntityFrameworkCoreInstrumentation()
+            // .AddRedisInstrumentation()
+            .AddNpgsql();
+        tracing.AddOtlpExporter();
+    });
     
 builder.Logging.AddOpenTelemetry(logging =>
 {
     logging.IncludeScopes = true;
     logging.IncludeFormattedMessage = true;
+    logging.AddOtlpExporter();
 });
+
 
 var app = builder.Build();
 
@@ -215,7 +225,7 @@ app.UseAuthorization();
 app.UseRouting();
 app.UseHttpMetrics();
 
-app.UseOpenTelemetryPrometheusScrapingEndpoint();
+// app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.MapControllers();
 
 app.Run();
