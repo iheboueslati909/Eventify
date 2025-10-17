@@ -31,7 +31,7 @@ namespace eventify.SharedKernel
 
         public T Value => IsSuccess 
             ? _value 
-            : throw new InvalidOperationException("Cannot access Value when result is a failure.");
+            : throw new InvalidOperationException("Cannot access Value when result is a failure, details : " + Error);
 
         protected internal Result(T value, bool isSuccess, string error) 
             : base(isSuccess, error)
