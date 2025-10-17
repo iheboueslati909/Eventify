@@ -12,6 +12,7 @@ public record CreateTicketPurchaseResult(Guid TicketPurchaseId, string CheckoutU
 public record CreateTicketPurchaseCommand(
     Guid TicketId,
     Guid UserId,
+    int Quantity,
     Guid? PaymentId,
     string PaymentMethod = "stripe" // Default to Stripe, can be extended later
 ) : ICommand<Result<CreateTicketPurchaseResult>>;
@@ -46,24 +47,24 @@ public class CreateTicketPurchaseCommandHandler : ICommandHandler<CreateTicketPu
         if (user == null)
             return Result.Failure<CreateTicketPurchaseResult>("User not found.");
 
+        //must be domain function
         if (ticket.Event is null)
             return Result.Failure<CreateTicketPurchaseResult>("Ticket is not linked to an event.");
 
+        //must be domain function
         if (!ticket.Event.IsPublished || ticket.Event.EndDate < DateTime.UtcNow)
             return Result.Failure<CreateTicketPurchaseResult>("Event is not valid for purchase.");
 
         // ✅ Reserve logic inside domain
-        var reserveResult = ticket.Reserve();
-        if (reserveResult.IsFailure)
-            return Result.Failure<CreateTicketPurchaseResult>(reserveResult.Error);
+        if (!ticket.CanReserve(command.Quantity))
+            return Result.Failure<CreateTicketPurchaseResult>("Quantity unavailable");
 
         // ✅ Create and save the pending ticket purchase
-        var purchaseResult = TicketPurchase.Create(command.TicketId, command.UserId, command.PaymentId);
+        var purchaseResult = TicketPurchase.Create(command.TicketId, command.UserId, command.Quantity, command.PaymentId);
         if (purchaseResult.IsFailure)
             return Result.Failure<CreateTicketPurchaseResult>(purchaseResult.Error);
 
         await _ticketPurchaseRepository.AddAsync(purchaseResult.Value);
-        await _ticketRepository.UpdateAsync(ticket); // ensure ReservedCount is tracked
         await _ticketPurchaseRepository.SaveChangesAsync();
 
         var paymentResult = await _paymentService.InitiatePaymentSession(

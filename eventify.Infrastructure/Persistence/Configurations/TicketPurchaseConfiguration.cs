@@ -25,6 +25,9 @@ public class TicketPurchaseConfiguration : IEntityTypeConfiguration<TicketPurcha
         builder.Property(tp => tp.PaymentId)
             .IsRequired(false);
 
+        builder.Property(tp => tp.Quantity)
+            .IsRequired();
+
         // TicketPurchase - Ticket (many-to-one)
         builder.HasOne(tp => tp.Ticket)
             .WithMany(t => t.TicketPurchases)

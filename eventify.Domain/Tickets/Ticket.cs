@@ -53,17 +53,17 @@ public class Ticket
         return Result.Success(new Ticket(eventId, creatorId, price, name, quantity, reservedCount, currency));
     }
 
-    public bool CanReserve()
+    public bool CanReserve(int amount = 1)
     {
-        return Quantity - ReservedCount > 0;
+        return (ReservedCount + amount) <= Quantity;
     }
 
-    public Result Reserve()
+    public Result Reserve(int amount = 1)
     {
-        if (!CanReserve())
+        if (!CanReserve(amount))
             return Result.Failure("No more tickets available.");
 
-        ReservedCount++;
+        ReservedCount += amount;
         return Result.Success();
     }
 

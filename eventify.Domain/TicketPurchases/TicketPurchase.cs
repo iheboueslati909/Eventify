@@ -12,13 +12,15 @@ public class TicketPurchase
     public TicketPurchaseStatus Status { get; private set; }
     public DateTime PurchasedAt { get; private set; }
 
+    public int Quantity { get; private set; }
+
     // Navigation properties
     public Ticket Ticket { get; private set; }
     public Member User { get; private set; }
 
     private TicketPurchase() { } // For EF Core
 
-    private TicketPurchase(Guid ticketId, Guid userId, Guid? paymentId, TicketPurchaseStatus status)
+    private TicketPurchase(Guid ticketId, Guid userId, Guid? paymentId, TicketPurchaseStatus status, int quantity)
     {
         Id = Guid.NewGuid();
         TicketId = ticketId;
@@ -26,16 +28,17 @@ public class TicketPurchase
         PaymentId = paymentId;
         Status = status;
         PurchasedAt = DateTime.UtcNow;
+        Quantity = quantity;
     }
 
-    public static Result<TicketPurchase> Create(Guid ticketId, Guid userId, Guid? paymentId = null)
+    public static Result<TicketPurchase> Create(Guid ticketId, Guid userId, int quantity = 1, Guid? paymentId = null)
     {
         if (ticketId == Guid.Empty)
             return Result.Failure<TicketPurchase>("Ticket ID cannot be empty.");
         if (userId == Guid.Empty)
             return Result.Failure<TicketPurchase>("User ID cannot be empty.");
 
-        return Result.Success(new TicketPurchase(ticketId, userId, paymentId, TicketPurchaseStatus.PendingPayment));
+        return Result.Success(new TicketPurchase(ticketId, userId, paymentId, TicketPurchaseStatus.PendingPayment, quantity));
     }
 
     public Result MarkAsPaid(Guid? paymentId = null)

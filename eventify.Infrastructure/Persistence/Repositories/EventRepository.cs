@@ -11,7 +11,7 @@ public class EventRepository : BaseRepository<Event>, IEventRepository
 
     public async Task<IList<Event>> GetPublishedEventsAsync()
     {
-        return await _context.Set<Event>().Where(e => e.IsPublished && !e.IsDeleted).ToListAsync();
+        return await _context.Set<Event>().Where(e => !e.IsDeleted).ToListAsync();
     }
 
     public void AttachEntity<TEntity>(TEntity entity) where TEntity : class
