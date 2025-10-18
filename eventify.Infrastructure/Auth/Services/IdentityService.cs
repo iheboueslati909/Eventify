@@ -31,7 +31,7 @@ public class IdentityService : IIdentityService
 
     public async Task<Result<Guid>> RegisterAsync(string firstName, string lastName, string email, string password)
     {
-        // Create domain entities/value objects
+        // Validate inputs first - fail fast
         var firstNameResult = Name.Create(firstName);
         var lastNameResult = Name.Create(lastName);
         var emailResult = Email.Create(email);
@@ -42,15 +42,13 @@ public class IdentityService : IIdentityService
         if (emailResult.IsFailure) return Result.Failure<Guid>(emailResult.Error);
         if (passwordResult.IsFailure) return Result.Failure<Guid>(passwordResult.Error);
 
-        // Create member
+        // Create member entity
         var memberResult = Member.Create(firstNameResult.Value, lastNameResult.Value, emailResult.Value);
         if (memberResult.IsFailure) return Result.Failure<Guid>(memberResult.Error);
 
         var member = memberResult.Value;
-        await _memberRepository.AddAsync(member);
-        await _memberRepository.SaveChangesAsync();
 
-        // Create identity user
+        // Create Identity user FIRST (no transaction needed yet)
         var user = new AppUser
         {
             Email = email,
@@ -67,7 +65,20 @@ public class IdentityService : IIdentityService
         var roleResult = await _userManager.AddToRoleAsync(user, "User");
         if (!roleResult.Succeeded)
         {
+            await _userManager.DeleteAsync(user);
             return Result.Failure<Guid>(string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+        }
+
+        // NOW save the member
+        try
+        {
+            await _memberRepository.AddAsync(member);
+            await _memberRepository.SaveChangesAsync();
+        }
+        catch
+        {
+            await _userManager.DeleteAsync(user);
+            throw;
         }
 
         return Result.Success(member.Id);
